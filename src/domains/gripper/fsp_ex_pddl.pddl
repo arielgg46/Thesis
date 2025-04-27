@@ -1,0 +1,7 @@
+(define (problem one_room_to_n_room_distributed_4_6)
+    (:domain gripper)
+    (:requirements :strips)
+    (:objects ball1 ball2 ball3 ball4 ball5 ball6 gripper1 gripper2 room1 room2 room3 room4)
+    (:init (at ball1 room1) (at ball2 room1) (at ball3 room1) (at ball4 room1) (at ball5 room1) (at ball6 room1) (at-robby room1) (ball ball1) (ball ball2) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (free gripper1) (free gripper2) (gripper gripper1) (gripper gripper2) (room room1) (room room2) (room room3) (room room4))
+    (:goal (and (free gripper1) (free gripper2) (at ball1 room1) (at ball2 room2) (at ball3 room3) (at ball4 room3) (at ball5 room4) (at ball6 room4)))
+)

@@ -1,0 +1,7 @@
+Output syntax:
+The optimal plan, a sequence of actions in valid PDDL format, exactly one action per line, no numbering/commentary:
+(move <from_room> <to_room>)
+(pick <ball> <room> <gripper>)
+(drop <ball> <room> <gripper>)
+
+Replace <ball>, <room>, and <gripper> with object names (e.g. ball1, room3, left).

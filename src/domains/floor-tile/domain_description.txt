@@ -1,0 +1,1 @@
+In this world, a robot can move around a grid of tiles and paint them with different colors.

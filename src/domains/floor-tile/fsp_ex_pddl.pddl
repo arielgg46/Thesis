@@ -1,0 +1,7 @@
+(define (problem grid_to_all_different_1_6_6)
+    (:domain floor-tile)
+    (:requirements :typing)
+    (:objects color1 color2 color3 color4 color5 color6 - color robot1 - robot tile1 tile2 tile3 tile4 tile5 tile6 - tile)
+    (:init (available-color color1) (available-color color2) (available-color color3) (available-color color4) (available-color color5) (available-color color6) (right tile2 tile1) (right tile4 tile3) (right tile6 tile5) (robot-at robot1 tile1) (robot-has robot1 color1) (up tile1 tile3) (up tile2 tile4) (up tile3 tile5) (up tile4 tile6))
+    (:goal (and (painted tile1 color1) (painted tile2 color2) (painted tile3 color3) (painted tile4 color4) (painted tile5 color5) (painted tile6 color6)))
+)

@@ -1,0 +1,10 @@
+The available actions are:
+- change-color(robot, current_color, new_color): The robot can change the color it holds from the current one to a new available color. After this, the robot will no longer have the current color and will now hold the new one.
+- paint-up(robot, target_tile, current_tile, color): The robot can paint the tile above its current position if it is holding a color and the target tile is above the current one. After this, the target tile will be painted with that color.
+- paint-down(robot, target_tile, current_tile, color): The robot can paint the tile below its current position if it is holding a color and the target tile is below the current one. After this, the target tile will be painted with that color.
+- paint-right(robot, target_tile, current_tile, color): The robot can paint the tile to the right of its current position if it is holding a color and the target tile is to the right. After this, the target tile will be painted with that color.
+- paint-left(robot, target_tile, current_tile, color): The robot can paint the tile to the left of its current position if it is holding a color and the target tile is to the left. After this, the target tile will be painted with that color.
+- up(robot, current_tile, target_tile): The robot can move upward to a tile if the target tile is directly above its current tile. After this, the robot will be at the new tile and no longer at the previous one.
+- down(robot, current_tile, target_tile): The robot can move downward to a tile if the target tile is directly below its current tile. After this, the robot will be at the new tile and no longer at the previous one.
+- right(robot, current_tile, target_tile): The robot can move right to a tile if the target tile is directly to the right. After this, the robot will be at the new tile and no longer at the previous one.
+- left(robot, current_tile, target_tile): The robot can move left to a tile if the target tile is directly to the left. After this, the robot will be at the new tile and no longer at the previous one.

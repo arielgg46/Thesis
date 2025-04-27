@@ -1,0 +1,1 @@
+In this world, a robot has an arm that can interact with blocks stacked in a table.

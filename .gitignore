@@ -129,7 +129,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv312
 env/
 venv/
 ENV/
@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Custom
+src/dataset/dataset-v2.db
+src/dataset/subsets
+src/results
+src/deprecated
+src/dataset/splits.yaml

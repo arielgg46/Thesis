@@ -1,0 +1,1 @@
+In this world, a robot can move between rooms and transport balls using a pair of grippers.

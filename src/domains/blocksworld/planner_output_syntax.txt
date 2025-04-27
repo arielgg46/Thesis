@@ -1,0 +1,8 @@
+Output syntax:
+The optimal plan, a sequence of actions in valid PDDL format, exactly one action per line, no numbering/commentary:
+(pickup <block>)
+(putdown <block>)
+(stack <block> <block>)
+(unstack <block> <block>)
+
+Replace <block> with object names (e.g. b1, b2).

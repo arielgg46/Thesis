@@ -1,0 +1,5 @@
+The available actions are:
+- pickup(block): The robot can pick up a block from the table if it is clear (nothing on top), on the table, and the robot's arm is empty. After doing this, the block is held by the robot, it is no longer on the table or clear, and the arm is no longer empty.
+- putdown(block): The robot can place a held block onto the table. After doing this, the block will be on the table and clear, and the arm will be empty again.
+- stack(top_block, bottom_block): The robot can place a block it is holding on top of another block if the latter is clear. After this, the top block will be on the bottom one and clear, the bottom block will no longer be clear, and the robot’s arm will be empty and not holding anything.
+- unstack(top_block, bottom_block): The robot can separate a block from another if the top block is clear, is on the bottom block, and the arm is empty. After this, the robot will be holding the top block (which will no longer be on the bottom one), the bottom block will be clear, and the arm will no longer be empty.

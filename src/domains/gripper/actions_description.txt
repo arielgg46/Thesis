@@ -1,0 +1,4 @@
+The available actions are:
+- move(from_room, to_room): The robot can move from one room to another if it is currently in the source room. After moving, it will be in the destination room and no longer in the source room.
+- pick(ball, room, gripper): The robot can pick up a ball using the selected gripper if the ball is in that room, the robot is also in that room, and the gripper is free. After picking up the ball, the ball is no longer in the room, the gripper is no longer free, and the robot is carrying the ball with that gripper.
+- drop(ball, room, gripper): The robot can drop the ball it is carrying using a specific gripper if it is currently in the room. After dropping, the ball is in the room, the gripper becomes free, and the robot is no longer carrying the ball.

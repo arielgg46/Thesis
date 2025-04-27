@@ -1,0 +1,21 @@
+{
+    "color": [
+        "color1",
+        "color2",
+        "color3",
+        "color4",
+        "color5",
+        "color6"
+    ],
+    "robot": [
+        "robot1"
+    ],
+    "tile": [
+        "tile1",
+        "tile2",
+        "tile3",
+        "tile4",
+        "tile5",
+        "tile6"
+    ]
+}

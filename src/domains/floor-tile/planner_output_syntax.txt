@@ -1,0 +1,13 @@
+Output syntax:
+The optimal plan, a sequence of actions in valid PDDL format, exactly one action per line, no numbering/commentary:
+(change-color <robot> <current_color> <new_color>)
+(paint-up <robot> <target_tile> <current_tile> <color>)
+(paint-down <robot> <target_tile> <current_tile> <color>)
+(paint-right <robot> <target_tile> <current_tile> <color>)
+(paint-left <robot> <target_tile> <current_tile> <color>)
+(up <robot> <current_tile> <target_tile>)
+(down <robot> <current_tile> <target_tile>)
+(right <robot> <current_tile> <target_tile>)
+(left <robot> <current_tile> <target_tile>)
+
+Replace <robot>, <tile>, and <color> with object names (e.g. robot1, tile5, color4).
