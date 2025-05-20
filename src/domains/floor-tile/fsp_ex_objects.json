@@ -1,11 +1,7 @@
 {
     "color": [
         "color1",
-        "color2",
-        "color3",
-        "color4",
-        "color5",
-        "color6"
+        "color2"
     ],
     "robot": [
         "robot1"
@@ -16,6 +12,9 @@
         "tile3",
         "tile4",
         "tile5",
-        "tile6"
+        "tile6",
+        "tile7",
+        "tile8",
+        "tile9"
     ]
 }

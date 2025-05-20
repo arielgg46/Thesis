@@ -1,0 +1,260 @@
+{
+    "tower": [
+        {
+            "id": 29569,
+            "name": "blocksworld_tower_to_on_table_blocks_list_1_1_1_1_1_1_1_3_5_7",
+            "domain": "blocksworld",
+            "init": "tower",
+            "goal": "on_table",
+            "num_objects": 22,
+            "problem_pddl": "(define (problem tower_to_on_table_1_1_1_1_1_1_1_3_5_7)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b1) (clear b11) (clear b16) (clear b2) (clear b3) (clear b4) (clear b5) (clear b6) (clear b7) (clear b8) (on b11 b12) (on b12 b13) (on b13 b14) (on b14 b15) (on b16 b17) (on b17 b18) (on b18 b19) (on b19 b20) (on b20 b21) (on b21 b22) (on b8 b9) (on b9 b10) (on-table b1) (on-table b10) (on-table b15) (on-table b2) (on-table b22) (on-table b3) (on-table b4) (on-table b5) (on-table b6) (on-table b7))\n    (:goal (and (arm-empty) (clear b1) (on-table b1) (clear b2) (on-table b2) (clear b3) (on-table b3) (clear b4) (on-table b4) (clear b5) (on-table b5) (clear b6) (on-table b6) (clear b7) (on-table b7) (clear b8) (on-table b8) (clear b9) (on-table b9) (clear b10) (on-table b10) (clear b11) (on-table b11) (clear b12) (on-table b12) (clear b13) (on-table b13) (clear b14) (on-table b14) (clear b15) (on-table b15) (clear b16) (on-table b16) (clear b17) (on-table b17) (clear b18) (on-table b18) (clear b19) (on-table b19) (clear b20) (on-table b20) (clear b21) (on-table b21) (clear b22) (on-table b22)))\n)",
+            "natural_language": "You have 22 blocks, stacked into 10 towers of heights 1, 1, 1, 1, 1, 1, 1, 3, 5, 7, and your arm is empty.\nYour goal is to unstack the blocks into individual blocks on the table.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 33,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 45,
+            "is_placeholder": 1
+        }
+    ],
+    "holding_one": [
+        {
+            "id": 73773,
+            "name": "blocksworld_holding_one_to_stack_blocks_list_24",
+            "domain": "blocksworld",
+            "init": "holding_one",
+            "goal": "stack",
+            "num_objects": 24,
+            "problem_pddl": "(define (problem holding_one_to_stack_24)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b23 b24 b3 b4 b5 b6 b7 b8 b9)\n    (:init (clear b10) (clear b11) (clear b12) (clear b13) (clear b14) (clear b15) (clear b16) (clear b17) (clear b18) (clear b19) (clear b2) (clear b20) (clear b21) (clear b22) (clear b23) (clear b24) (clear b3) (clear b4) (clear b5) (clear b6) (clear b7) (clear b8) (clear b9) (holding b1) (on-table b10) (on-table b11) (on-table b12) (on-table b13) (on-table b14) (on-table b15) (on-table b16) (on-table b17) (on-table b18) (on-table b19) (on-table b2) (on-table b20) (on-table b21) (on-table b22) (on-table b23) (on-table b24) (on-table b3) (on-table b4) (on-table b5) (on-table b6) (on-table b7) (on-table b8) (on-table b9))\n    (:goal (and (arm-empty) (on b2 b1) (on b3 b2) (on b4 b3) (on b5 b4) (on b6 b5) (on b7 b6) (on b8 b7) (on b9 b8) (on b10 b9) (on b11 b10) (on b12 b11) (on b13 b12) (on b14 b13) (on b15 b14) (on b16 b15) (on b17 b16) (on b18 b17) (on b19 b18) (on b20 b19) (on b21 b20) (on b22 b21) (on b23 b22) (on b24 b23) (clear b24) (on-table b1)))\n)",
+            "natural_language": "You have 24 blocks. You are holding one block, and the rest are on the table.\nYour goal is to stack the blocks into a single stack.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 47,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 26,
+            "is_placeholder": 1
+        }
+    ],
+    "stack": [
+        {
+            "id": 9441,
+            "name": "blocksworld_stack_to_staircase_blocks_list_28",
+            "domain": "blocksworld",
+            "init": "stack",
+            "goal": "staircase",
+            "num_objects": 28,
+            "problem_pddl": "(define (problem stack_to_staircase_28)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b23 b24 b25 b26 b27 b28 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b28) (on b10 b9) (on b11 b10) (on b12 b11) (on b13 b12) (on b14 b13) (on b15 b14) (on b16 b15) (on b17 b16) (on b18 b17) (on b19 b18) (on b2 b1) (on b20 b19) (on b21 b20) (on b22 b21) (on b23 b22) (on b24 b23) (on b25 b24) (on b26 b25) (on b27 b26) (on b28 b27) (on b3 b2) (on b4 b3) (on b5 b4) (on b6 b5) (on b7 b6) (on b8 b7) (on b9 b8) (on-table b1))\n    (:goal (and (arm-empty) (clear b1) (on-table b1) (clear b2) (on b2 b3) (on-table b3) (clear b4) (on b4 b5) (on b5 b6) (on-table b6) (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10) (clear b11) (on b11 b12) (on b12 b13) (on b13 b14) (on b14 b15) (on-table b15) (clear b16) (on b16 b17) (on b17 b18) (on b18 b19) (on b19 b20) (on b20 b21) (on-table b21) (clear b22) (on b22 b23) (on b23 b24) (on b24 b25) (on b25 b26) (on b26 b27) (on b27 b28) (on-table b28)))\n)",
+            "natural_language": "You have 28 blocks, b1 through b28, stacked on top of each other, and your arm is empty.\nYour goal is to stack the blocks into 7 stacks of increasing heights, starting with a stack of height 1.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 30,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 36,
+            "is_placeholder": 1
+        }
+    ],
+    "staircase": [
+        {
+            "id": 18717,
+            "name": "blocksworld_staircase_to_stack_blocks_list_28",
+            "domain": "blocksworld",
+            "init": "staircase",
+            "goal": "stack",
+            "num_objects": 28,
+            "problem_pddl": "(define (problem staircase_to_stack_28)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b23 b24 b25 b26 b27 b28 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b1) (clear b11) (clear b16) (clear b2) (clear b22) (clear b4) (clear b7) (on b11 b12) (on b12 b13) (on b13 b14) (on b14 b15) (on b16 b17) (on b17 b18) (on b18 b19) (on b19 b20) (on b2 b3) (on b20 b21) (on b22 b23) (on b23 b24) (on b24 b25) (on b25 b26) (on b26 b27) (on b27 b28) (on b4 b5) (on b5 b6) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b1) (on-table b10) (on-table b15) (on-table b21) (on-table b28) (on-table b3) (on-table b6))\n    (:goal (and (arm-empty) (on b2 b1) (on b3 b2) (on b4 b3) (on b5 b4) (on b6 b5) (on b7 b6) (on b8 b7) (on b9 b8) (on b10 b9) (on b11 b10) (on b12 b11) (on b13 b12) (on b14 b13) (on b15 b14) (on b16 b15) (on b17 b16) (on b18 b17) (on b19 b18) (on b20 b19) (on b21 b20) (on b22 b21) (on b23 b22) (on b24 b23) (on b25 b24) (on b26 b25) (on b27 b26) (on b28 b27) (clear b28) (on-table b1)))\n)",
+            "natural_language": "You have 28 blocks, b1 through b28, stacked into 7 stacks of increasing heights, starting with a stack of height 1.\nYour goal is to stack the blocks into a single stack.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 36,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 30,
+            "is_placeholder": 1
+        }
+    ],
+    "evenly_distributed": [
+        {
+            "id": 113405,
+            "name": "gripper_evenly_distributed_to_one_room_balls_in_grippers_0_0_balls_in_rooms_18_0_0",
+            "domain": "gripper",
+            "init": "evenly_distributed",
+            "goal": "one_room",
+            "num_objects": 23,
+            "problem_pddl": "(define (problem evenly_distributed_to_one_room_3_18)\n    (:domain gripper)\n    (:requirements :strips)\n    (:objects ball1 ball10 ball11 ball12 ball13 ball14 ball15 ball16 ball17 ball18 ball2 ball3 ball4 ball5 ball6 ball7 ball8 ball9 gripper1 gripper2 room1 room2 room3)\n    (:init (at ball1 room1) (at ball10 room1) (at ball11 room2) (at ball12 room3) (at ball13 room1) (at ball14 room2) (at ball15 room3) (at ball16 room1) (at ball17 room2) (at ball18 room3) (at ball2 room2) (at ball3 room3) (at ball4 room1) (at ball5 room2) (at ball6 room3) (at ball7 room1) (at ball8 room2) (at ball9 room3) (at-robby room1) (ball ball1) (ball ball10) (ball ball11) (ball ball12) (ball ball13) (ball ball14) (ball ball15) (ball ball16) (ball ball17) (ball ball18) (ball ball2) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (ball ball7) (ball ball8) (ball ball9) (free gripper1) (free gripper2) (gripper gripper1) (gripper gripper2) (room room1) (room room2) (room room3))\n    (:goal (and (free gripper1) (free gripper2) (at ball1 room1) (at ball2 room1) (at ball3 room1) (at ball4 room1) (at ball5 room1) (at ball6 room1) (at ball7 room1) (at ball8 room1) (at ball9 room1) (at ball10 room1) (at ball11 room1) (at ball12 room1) (at ball13 room1) (at ball14 room1) (at ball15 room1) (at ball16 room1) (at ball17 room1) (at ball18 room1)))\n)",
+            "natural_language": "You have 3 rooms, 18 balls, and 2 grippers. The balls are equally distributed across the rooms, and the grippers are free. The robby is in the first room.\nYour goal is to gather all balls into one room.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 43,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 20,
+            "is_placeholder": 1
+        }
+    ],
+    "n_room_distributed": [
+        {
+            "id": 142481,
+            "name": "gripper_n_room_distributed_to_focus_min_balls_in_grippers_0_0_balls_in_rooms_1_3_4_4_4_4",
+            "domain": "gripper",
+            "init": "n_room_distributed",
+            "goal": "focus_min",
+            "num_objects": 28,
+            "problem_pddl": "(define (problem n_room_distributed_to_focus_min_6_20)\n    (:domain gripper)\n    (:requirements :strips)\n    (:objects ball1 ball10 ball11 ball12 ball13 ball14 ball15 ball16 ball17 ball18 ball19 ball2 ball20 ball3 ball4 ball5 ball6 ball7 ball8 ball9 gripper1 gripper2 room1 room2 room3 room4 room5 room6)\n    (:init (at ball1 room1) (at ball10 room4) (at ball11 room4) (at ball12 room4) (at ball13 room5) (at ball14 room5) (at ball15 room5) (at ball16 room5) (at ball17 room6) (at ball18 room6) (at ball19 room6) (at ball2 room2) (at ball20 room6) (at ball3 room2) (at ball4 room2) (at ball5 room3) (at ball6 room3) (at ball7 room3) (at ball8 room3) (at ball9 room4) (at-robby room1) (ball ball1) (ball ball10) (ball ball11) (ball ball12) (ball ball13) (ball ball14) (ball ball15) (ball ball16) (ball ball17) (ball ball18) (ball ball19) (ball ball2) (ball ball20) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (ball ball7) (ball ball8) (ball ball9) (free gripper1) (free gripper2) (gripper gripper1) (gripper gripper2) (room room1) (room room2) (room room3) (room room4) (room room5) (room room6))\n    (:goal (and (free gripper1) (free gripper2) (at ball1 room1) (at ball2 room1) (at ball3 room1) (at ball4 room1) (at ball5 room1) (at ball6 room1) (at ball7 room1) (at ball8 room1) (at ball9 room1) (at ball10 room1) (at ball11 room1) (at ball12 room1) (at ball13 room1) (at ball14 room1) (at ball15 room1) (at ball16 room1) (at ball17 room1) (at ball18 room1) (at ball19 room1) (at ball20 room1)))\n)",
+            "natural_language": "You have 6 rooms, 20 balls, and 2 grippers. You have 1 room with 1 ball, 1 room with 3 balls, and 4 rooms with 4 balls.. The grippers are free. The robby is in the first room.\nYour goal is to bring all the balls into the room which already has the least balls.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 50,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 22,
+            "is_placeholder": 0
+        }
+    ],
+    "one_room": [
+        {
+            "id": 109759,
+            "name": "gripper_one_room_to_focus_min_balls_in_grippers_0_0_balls_in_rooms_17_0",
+            "domain": "gripper",
+            "init": "one_room",
+            "goal": "focus_min",
+            "num_objects": 21,
+            "problem_pddl": "(define (problem one_room_to_focus_min_2_17)\n    (:domain gripper)\n    (:requirements :strips)\n    (:objects ball1 ball10 ball11 ball12 ball13 ball14 ball15 ball16 ball17 ball2 ball3 ball4 ball5 ball6 ball7 ball8 ball9 gripper1 gripper2 room1 room2)\n    (:init (at ball1 room1) (at ball10 room1) (at ball11 room1) (at ball12 room1) (at ball13 room1) (at ball14 room1) (at ball15 room1) (at ball16 room1) (at ball17 room1) (at ball2 room1) (at ball3 room1) (at ball4 room1) (at ball5 room1) (at ball6 room1) (at ball7 room1) (at ball8 room1) (at ball9 room1) (at-robby room1) (ball ball1) (ball ball10) (ball ball11) (ball ball12) (ball ball13) (ball ball14) (ball ball15) (ball ball16) (ball ball17) (ball ball2) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (ball ball7) (ball ball8) (ball ball9) (free gripper1) (free gripper2) (gripper gripper1) (gripper gripper2) (room room1) (room room2))\n    (:goal (and (free gripper1) (free gripper2) (at ball1 room2) (at ball2 room2) (at ball3 room2) (at ball4 room2) (at ball5 room2) (at ball6 room2) (at ball7 room2) (at ball8 room2) (at ball9 room2) (at ball10 room2) (at ball11 room2) (at ball12 room2) (at ball13 room2) (at ball14 room2) (at ball15 room2) (at ball16 room2) (at ball17 room2)))\n)",
+            "natural_language": "You have 2 rooms, 17 balls, and 2 grippers. All the balls are in the first room, and the grippers are free. The robby is in the first room.\nYour goal is to bring all the balls into the room which already has the least balls.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 40,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 19,
+            "is_placeholder": 0
+        }
+    ],
+    "equal_towers": [
+        {
+            "id": 82729,
+            "name": "blocksworld_equal_towers_to_staircase_blocks_list_28",
+            "domain": "blocksworld",
+            "init": "equal_towers",
+            "goal": "staircase",
+            "num_objects": 28,
+            "problem_pddl": "(define (problem equal_towers_to_staircase_28)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b23 b24 b25 b26 b27 b28 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b12) (clear b16) (clear b20) (clear b24) (clear b28) (clear b4) (clear b8) (on b10 b9) (on b11 b10) (on b12 b11) (on b14 b13) (on b15 b14) (on b16 b15) (on b18 b17) (on b19 b18) (on b2 b1) (on b20 b19) (on b22 b21) (on b23 b22) (on b24 b23) (on b26 b25) (on b27 b26) (on b28 b27) (on b3 b2) (on b4 b3) (on b6 b5) (on b7 b6) (on b8 b7) (on-table b1) (on-table b13) (on-table b17) (on-table b21) (on-table b25) (on-table b5) (on-table b9))\n    (:goal (and (arm-empty) (clear b1) (on-table b1) (clear b2) (on b2 b3) (on-table b3) (clear b4) (on b4 b5) (on b5 b6) (on-table b6) (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10) (clear b11) (on b11 b12) (on b12 b13) (on b13 b14) (on b14 b15) (on-table b15) (clear b16) (on b16 b17) (on b17 b18) (on b18 b19) (on b19 b20) (on b20 b21) (on-table b21) (clear b22) (on b22 b23) (on b23 b24) (on b24 b25) (on b25 b26) (on b26 b27) (on b27 b28) (on-table b28)))\n)",
+            "natural_language": "You have 28 blocks, b1 through b28, stacked into 1 towers of equal heights, and your arm is empty.\nYour goal is to stack the blocks into 7 stacks of increasing heights, starting with a stack of height 1.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 36,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 36,
+            "is_placeholder": 1
+        }
+    ],
+    "on_table": [
+        {
+            "id": 241,
+            "name": "blocksworld_on_table_to_staircase_blocks_list_21",
+            "domain": "blocksworld",
+            "init": "on_table",
+            "goal": "staircase",
+            "num_objects": 21,
+            "problem_pddl": "(define (problem on_table_to_staircase_21)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b1) (clear b10) (clear b11) (clear b12) (clear b13) (clear b14) (clear b15) (clear b16) (clear b17) (clear b18) (clear b19) (clear b2) (clear b20) (clear b21) (clear b3) (clear b4) (clear b5) (clear b6) (clear b7) (clear b8) (clear b9) (on-table b1) (on-table b10) (on-table b11) (on-table b12) (on-table b13) (on-table b14) (on-table b15) (on-table b16) (on-table b17) (on-table b18) (on-table b19) (on-table b2) (on-table b20) (on-table b21) (on-table b3) (on-table b4) (on-table b5) (on-table b6) (on-table b7) (on-table b8) (on-table b9))\n    (:goal (and (arm-empty) (clear b1) (on-table b1) (clear b2) (on b2 b3) (on-table b3) (clear b4) (on b4 b5) (on b5 b6) (on-table b6) (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10) (clear b11) (on b11 b12) (on b12 b13) (on b13 b14) (on b14 b15) (on-table b15) (clear b16) (on b16 b17) (on b17 b18) (on b18 b19) (on b19 b20) (on b20 b21) (on-table b21)))\n)",
+            "natural_language": "You have 21 blocks, each laying directly on the table, and your arm is empty.\nYour goal is to stack the blocks into 6 stacks of increasing heights, starting with a stack of height 1.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 43,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 28,
+            "is_placeholder": 1
+        }
+    ],
+    "holding": [
+        {
+            "id": 169739,
+            "name": "gripper_holding_to_drop_and_pickup_balls_in_grippers_1_1_1_1_1_balls_in_rooms_3_0_0_0_0_0_0_0_0_0",
+            "domain": "gripper",
+            "init": "holding",
+            "goal": "drop_and_pickup",
+            "num_objects": 23,
+            "problem_pddl": "(define (problem holding_to_drop_and_pickup_10_8)\n    (:domain gripper)\n    (:requirements :strips)\n    (:objects ball1 ball2 ball3 ball4 ball5 ball6 ball7 ball8 gripper1 gripper2 gripper3 gripper4 gripper5 room1 room10 room2 room3 room4 room5 room6 room7 room8 room9)\n    (:init (at ball6 room1) (at ball7 room1) (at ball8 room1) (at-robby room1) (ball ball1) (ball ball2) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (ball ball7) (ball ball8) (carry ball1 gripper1) (carry ball2 gripper2) (carry ball3 gripper3) (carry ball4 gripper4) (carry ball5 gripper5) (gripper gripper1) (gripper gripper2) (gripper gripper3) (gripper gripper4) (gripper gripper5) (room room1) (room room10) (room room2) (room room3) (room room4) (room room5) (room room6) (room room7) (room room8) (room room9))\n    (:goal (and (at ball1 room2) (at ball2 room2) (at ball3 room2) (at ball4 room2) (at ball5 room2) (carry ball6 gripper1) (carry ball7 gripper2) (carry ball8 gripper3)))\n)",
+            "natural_language": "You have 10 rooms, 8 balls, and 5 grippers. 5 balls are distributed across the same number of grippers, and the rest are in the first room. The robby is in the first room.\nYour goal is to drop all the balls held by grippers in an empty room that the robby didn't start in, and pick up the balls that started in rooms not held by the robby.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 31,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 8,
+            "is_placeholder": 0
+        }
+    ],
+    "grid": [
+        {
+            "id": 181789,
+            "name": "floor-tile_grid_to_all_different_grid_size_5_2_n_colors_10_n_robots_4_n_tiles_10_robot_data_{'color': 0, 'pos': [0, 0]}_{'color': 1, 'pos': [4, 0]}_{'color': 2, 'pos': [4, 1]}_{'color': 3, 'pos': [0, 1]}",
+            "domain": "floor-tile",
+            "init": "grid",
+            "goal": "all_different",
+            "num_objects": 24,
+            "problem_pddl": "(define (problem grid_to_all_different_4_10_10)\n    (:domain floor-tile)\n    (:requirements :typing)\n    (:objects color1 color10 color2 color3 color4 color5 color6 color7 color8 color9 - color robot1 robot2 robot3 robot4 - robot tile1 tile10 tile2 tile3 tile4 tile5 tile6 tile7 tile8 tile9 - tile)\n    (:init (available-color color1) (available-color color10) (available-color color2) (available-color color3) (available-color color4) (available-color color5) (available-color color6) (available-color color7) (available-color color8) (available-color color9) (right tile10 tile9) (right tile2 tile1) (right tile4 tile3) (right tile6 tile5) (right tile8 tile7) (robot-at robot1 tile1) (robot-at robot2 tile9) (robot-at robot3 tile10) (robot-at robot4 tile2) (robot-has robot1 color1) (robot-has robot2 color2) (robot-has robot3 color3) (robot-has robot4 color4) (up tile1 tile3) (up tile2 tile4) (up tile3 tile5) (up tile4 tile6) (up tile5 tile7) (up tile6 tile8) (up tile7 tile9) (up tile8 tile10))\n    (:goal (and (painted tile1 color1) (painted tile2 color2) (painted tile3 color3) (painted tile4 color4) (painted tile5 color5) (painted tile6 color6) (painted tile7 color7) (painted tile8 color8) (painted tile9 color9) (painted tile10 color10)))\n)",
+            "natural_language": "You have 4 robots, 10 colors, and 10 unpainted tiles arranged in a grid with 5 rows and 2 columns. The first robot is at the top-left corner, and has the first color. The second robot is at the bottom-left corner, and has the second color. The third robot is at the bottom-right corner, and has the third color. The fourth robot is at the top-right corner, and has the fourth color. All colors are available.\nYour goal is to paint each tile with a different color.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 31,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 10,
+            "is_placeholder": 1
+        }
+    ],
+    "swap": [
+        {
+            "id": 20731,
+            "name": "blocksworld_swap_to_swap_blocks_list_4_26",
+            "domain": "blocksworld",
+            "init": "swap",
+            "goal": "swap",
+            "num_objects": 30,
+            "problem_pddl": "(define (problem swap_to_swap_4_26)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29 b3 b30 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b30) (clear b5) (on b10 b9) (on b11 b10) (on b12 b11) (on b13 b12) (on b14 b13) (on b15 b14) (on b16 b15) (on b17 b16) (on b18 b17) (on b19 b18) (on b20 b19) (on b21 b20) (on b22 b21) (on b23 b22) (on b24 b23) (on b25 b24) (on b26 b25) (on b27 b26) (on b28 b27) (on b29 b28) (on b3 b1) (on b30 b29) (on b4 b3) (on b5 b4) (on b6 b2) (on b7 b6) (on b8 b7) (on b9 b8) (on-table b1) (on-table b2))\n    (:goal (and (arm-empty) (on-table b2) (on-table b1) (on b3 b2) (on b4 b3) (on b5 b4) (clear b5) (on b6 b1) (on b7 b6) (on b8 b7) (on b9 b8) (on b10 b9) (on b11 b10) (on b12 b11) (on b13 b12) (on b14 b13) (on b15 b14) (on b16 b15) (on b17 b16) (on b18 b17) (on b19 b18) (on b20 b19) (on b21 b20) (on b22 b21) (on b23 b22) (on b24 b23) (on b25 b24) (on b26 b25) (on b27 b26) (on b28 b27) (on b29 b28) (on b30 b29) (clear b30)))\n)",
+            "natural_language": "You have 30 blocks, b1 through b30 in two towers with 4 blocks in one and 26 blocks in the other, and your arm is empty.\nYour goal is to swap all blocks except the bottom blocks from one tower to the other.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 33,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 33,
+            "is_placeholder": 0
+        }
+    ],
+    "invert": [
+        {
+            "id": 94043,
+            "name": "blocksworld_invert_to_invert_blocks_list_1_1_1_1_1_1_1_3_3_6",
+            "domain": "blocksworld",
+            "init": "invert",
+            "goal": "invert",
+            "num_objects": 19,
+            "problem_pddl": "(define (problem invert_to_invert_1_1_1_1_1_1_1_3_3_6)\n    (:domain blocksworld)\n    (:requirements :strips)\n    (:objects b1 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b2 b3 b4 b5 b6 b7 b8 b9)\n    (:init (arm-empty) (clear b1) (clear b11) (clear b14) (clear b2) (clear b3) (clear b4) (clear b5) (clear b6) (clear b7) (clear b8) (on b11 b12) (on b12 b13) (on b14 b15) (on b15 b16) (on b16 b17) (on b17 b18) (on b18 b19) (on b8 b9) (on b9 b10) (on-table b1) (on-table b10) (on-table b13) (on-table b19) (on-table b2) (on-table b3) (on-table b4) (on-table b5) (on-table b6) (on-table b7))\n    (:goal (and (arm-empty) (clear b19) (on b19 b18) (on b18 b17) (on b17 b16) (on b16 b15) (on b15 b14) (on-table b14) (clear b13) (on b13 b12) (on b12 b11) (on-table b11) (clear b10) (on b10 b9) (on b9 b8) (on-table b8) (clear b7) (on-table b7) (clear b6) (on-table b6) (clear b5) (on-table b5) (clear b4) (on-table b4) (clear b3) (on-table b3) (clear b2) (on-table b2) (clear b1) (on-table b1)))\n)",
+            "natural_language": "You have 19 blocks, stacked into 10 towers of heights 1, 1, 1, 1, 1, 1, 1, 3, 3, 6, and your arm is empty.\nYour goal is to invert each individual stack of blocks, such that the block that in each tower that was originally on the bottom will be on the top.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 30,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 30,
+            "is_placeholder": 0
+        }
+    ],
+    "rings": [
+        {
+            "id": 180821,
+            "name": "floor-tile_rings_to_paint_x_grid_size_4_4_n_colors_2_n_robots_2_n_tiles_16_robot_data_{'color': 0, 'pos': [0, 0]}_{'color': 1, 'pos': [1, 1]}",
+            "domain": "floor-tile",
+            "init": "rings",
+            "goal": "paint_x",
+            "num_objects": 20,
+            "problem_pddl": "(define (problem rings_to_paint_x_2_16_2)\n    (:domain floor-tile)\n    (:requirements :typing)\n    (:objects color1 color2 - color robot1 robot2 - robot tile1 tile10 tile11 tile12 tile13 tile14 tile15 tile16 tile2 tile3 tile4 tile5 tile6 tile7 tile8 tile9 - tile)\n    (:init (available-color color1) (available-color color2) (right tile10 tile9) (right tile11 tile10) (right tile12 tile11) (right tile14 tile13) (right tile15 tile14) (right tile16 tile15) (right tile2 tile1) (right tile3 tile2) (right tile4 tile3) (right tile6 tile5) (right tile7 tile6) (right tile8 tile7) (robot-at robot1 tile1) (robot-at robot2 tile6) (robot-has robot1 color1) (robot-has robot2 color2) (up tile1 tile5) (up tile10 tile14) (up tile11 tile15) (up tile12 tile16) (up tile2 tile6) (up tile3 tile7) (up tile4 tile8) (up tile5 tile9) (up tile6 tile10) (up tile7 tile11) (up tile8 tile12) (up tile9 tile13))\n    (:goal (and (painted tile1 color1) (painted tile4 color1) (painted tile6 color1) (painted tile7 color1) (painted tile11 color1) (painted tile10 color1) (painted tile16 color1) (painted tile13 color1) (painted tile2 color2) (painted tile3 color2) (painted tile5 color2) (painted tile8 color2) (painted tile9 color2) (painted tile12 color2) (painted tile14 color2) (painted tile15 color2)))\n)",
+            "natural_language": "You have 2 colors and 16 unpainted tiles arranged in a 4x4 grid, in 2 rings. The first robot is at the the top-left corner of the first ring from the outside, and has the first color. The second robot is at the the top-left corner of the second ring from the outside, and has the second color. All colors are available.\nYour goal is to paint an 'X' shape across the grid onto, and every other tile should be painted with a different color.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 30,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 16,
+            "is_placeholder": 1
+        }
+    ],
+    "juggle": [
+        {
+            "id": 151399,
+            "name": "gripper_juggle_to_juggle_balls_in_grippers_1_1_1_1_1_1_balls_in_rooms_5_0_0",
+            "domain": "gripper",
+            "init": "juggle",
+            "goal": "juggle",
+            "num_objects": 20,
+            "problem_pddl": "(define (problem juggle_to_juggle_3_11)\n    (:domain gripper)\n    (:requirements :strips)\n    (:objects ball1 ball10 ball11 ball2 ball3 ball4 ball5 ball6 ball7 ball8 ball9 gripper1 gripper2 gripper3 gripper4 gripper5 gripper6 room1 room2 room3)\n    (:init (at ball10 room1) (at ball11 room1) (at ball7 room1) (at ball8 room1) (at ball9 room1) (at-robby room1) (ball ball1) (ball ball10) (ball ball11) (ball ball2) (ball ball3) (ball ball4) (ball ball5) (ball ball6) (ball ball7) (ball ball8) (ball ball9) (carry ball1 gripper1) (carry ball2 gripper2) (carry ball3 gripper3) (carry ball4 gripper4) (carry ball5 gripper5) (carry ball6 gripper6) (gripper gripper1) (gripper gripper2) (gripper gripper3) (gripper gripper4) (gripper gripper5) (gripper gripper6) (room room1) (room room2) (room room3))\n    (:goal (and (carry ball2 gripper1) (carry ball3 gripper2) (carry ball4 gripper3) (carry ball5 gripper4) (carry ball6 gripper5) (carry ball1 gripper6) (at ball7 room1) (at ball8 room1) (at ball9 room1) (at ball10 room1) (at ball11 room1)))\n)",
+            "natural_language": "You have 3 rooms, 11 balls, and 6 grippers. 6 balls are distributed across the same number of grippers, and the rest are in the first room. The robby is in the first room.\nYour goal is to \"juggle\" the balls between the grippers that started with balls, such that the balls are in the same grippers as before, but shifted by one. The remaining balls should remain untouched.",
+            "init_is_abstract": 1,
+            "init_num_propositions": 31,
+            "goal_is_abstract": 1,
+            "goal_num_propositions": 11,
+            "is_placeholder": 0
+        }
+    ],
+    "disconnected_rows": [
+        null
+    ]
+}

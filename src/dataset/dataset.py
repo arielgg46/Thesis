@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import os
 import random
+import sqlite3
 
 # dataset = load_dataset("BatsResearch/planetarium")
 # dataset.save_to_disk("planetarium_local")
@@ -92,6 +93,94 @@ def select_and_save_planetarium_subset(
 #     subset_name="ejemplo_test"
 # )
 # print(f"Subconjunto guardado en: {json_file}")
+
+def select_and_save_planetarium_subset_sql(
+    db_path: str,
+    init_goal_pairs: List[Tuple[str, str]],
+    N: int,
+    subset_name: str,
+    seed: int = 42,
+    include_splits: bool = False
+):
+    """
+    Selecciona subconjuntos del dataset Planetarium (train + test) desde SQLite,
+    cumpliendo las combinaciones de rangos y flags de abstracción, muestreando
+    hasta N ejemplos por cada (init, goal), y guarda el resultado en un JSON.
+
+    Parámetros:
+    - db_path: ruta al dataset
+    - init_goal_pairs: [(init_str, goal_str), ...]
+    - N: número máximo de ejemplos por combinación
+    - subset_name: identificador del subconjunto (usa en el filename)
+    - seed: semilla aleatoria
+    - include_splits: si True, fusiona sólo los IDs de train+test usando la
+      tabla `splits`; si False, usa TODO el `problems` table.
+    """
+    # 1) Cargar problemas
+    conn = sqlite3.connect(db_path)
+    df = pd.read_sql_query("SELECT * FROM problems;", conn)
+    # return df
+
+    if include_splits:
+        # leer la tabla splits (debe tener columnas split_name, split, problem_id)
+        df_s = pd.read_sql_query("SELECT * FROM splits;", conn)
+        # quedarnos sólo con train+test (ajusta según tu esquema real)
+        df_ids = df_s[df_s['split_name'].isin(['train','test'])]
+        df = df[df['id'].isin(df_ids['problem_id'])]
+    conn.close()
+
+    # print(df)
+    # Definición de rangos
+    
+    not_found_combs = 0
+    # obj_ranges    = [(1, 5), (6, 15), (16, 30), (31, 45), (45, 1000)]
+    # init_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
+    # goal_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
+    obj_ranges    = [(5, 30)]
+    init_ranges   = [(7, 40)]
+    goal_ranges   = [(2, 40)]
+    init_abs_opts = [1]
+    goal_abs_opts = [1]
+    
+    random.seed(seed)
+    selected = []
+
+    # Iterar todas las combinaciones solicitadas
+    for init_val, goal_val in init_goal_pairs:
+        for o_lo, o_hi in obj_ranges:
+            for i_lo, i_hi in init_ranges:
+                for g_lo, g_hi in goal_ranges:
+                    for init_abs in init_abs_opts:
+                        for goal_abs in goal_abs_opts:
+                            mask = (
+                                (df['init'] == init_val) &
+                                (df['goal'] == goal_val) &
+                                df['num_objects'].between(o_lo, o_hi) &
+                                df['init_num_propositions'].between(i_lo, i_hi) &
+                                df['goal_num_propositions'].between(g_lo, g_hi) &
+                                (df['init_is_abstract'] == init_abs) &
+                                (df['goal_is_abstract'] == goal_abs)
+                            )
+                            subset = df[mask]
+                            if not subset.empty:
+                                k = min(N, len(subset))
+                                sampled = subset.sample(n=k, random_state=seed)
+                                selected.append(sampled)
+                            else:
+                                print("NOT FOUND", init_val, goal_val, init_abs, goal_abs)
+                                not_found_combs += 1
+    
+    print(not_found_combs)
+    if selected:
+        result_df = pd.concat(selected).reset_index(drop=True)
+    else:
+        result_df = pd.DataFrame(columns=df.columns)
+    
+    # Guardar en JSON
+    filename = f"planetarium_subset_{subset_name}.json"
+    result_df.to_json(filename, orient="records", indent=2)
+    
+    return filename
 
 def load_planetarium_subset(subset_name):
     """

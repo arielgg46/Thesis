@@ -1,16 +1,21 @@
 {
     "object": [
+        "room1",
+        "room2",
+        "room3",
+        "room4",
         "ball1",
         "ball2",
         "ball3",
         "ball4",
         "ball5",
         "ball6",
+        "ball7",
+        "ball8",
         "gripper1",
         "gripper2",
-        "room1",
-        "room2",
-        "room3",
-        "room4"
+        "gripper3",
+        "gripper4",
+        "gripper5"
     ]
 }

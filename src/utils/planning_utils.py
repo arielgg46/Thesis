@@ -1,8 +1,4 @@
-from classical_planner.planner import generate_plan
+from classical_planner.planner import generate_plan_with_fast_downward
 
-def try_generate_plan(domain_file, problem_file, planner_path, work_dir):
-    try:
-        return generate_plan(domain_file, problem_file, planner_path, work_dir=work_dir)
-    except Exception as e:
-        print(f"❌ Error generating plan: {e}")
-        return None
+def generate_plan(domain_file, problem_file):
+     return generate_plan_with_fast_downward(domain_file, problem_file)

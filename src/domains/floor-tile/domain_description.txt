@@ -1,1 +1,1 @@
-In this world, a robot can move around a grid of tiles and paint them with different colors.
+In this world, some robots can move around a grid of tiles (connected or disconnected rows of possibly different amounts of tiles) and paint them with different colors.

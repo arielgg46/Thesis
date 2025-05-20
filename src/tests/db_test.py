@@ -296,7 +296,7 @@ print("\nTest subset:")
 print(json.dumps(test_subset, indent=2))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "dataset-v2.db")
+db_path = os.path.join(BASE_DIR, "dataset-v3.db")
 
 select_and_save_planetarium_subset_sql(
     db_path = db_path,

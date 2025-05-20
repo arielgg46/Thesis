@@ -1,12 +1,11 @@
 import subprocess
 import os
-import shutil
 
-def generate_plan(domain_file: str,
+from config import FAST_DOWNWARD_PATH
+
+def generate_plan_with_fast_downward(domain_file: str,
                   problem_file: str,
-                  fast_downward_path: str,
                   alias: str = "lama-first",
-                  work_dir: str = None,
                   verbose: bool = False) -> str:
     """
     Runs Fast Downward with the specified domain and problem files.
@@ -14,10 +13,11 @@ def generate_plan(domain_file: str,
     - work_dir: directory where the plan file ('sas_plan') is expected to be created.
     Returns: the plan as a string.
     """
+    work_dir = os.path.dirname(os.path.abspath(__file__))
     cwd = work_dir or os.getcwd()
     cmd = [
         "python",
-        os.path.join(fast_downward_path, "fast-downward.py"),
+        os.path.join(FAST_DOWNWARD_PATH, "fast-downward.py"),
         "--alias", alias,
         domain_file,
         problem_file,
@@ -36,11 +36,12 @@ def generate_plan(domain_file: str,
 
     sas_plan = os.path.join(cwd, "sas_plan")
     if not os.path.exists(sas_plan):
-        raise FileNotFoundError(f"'sas_plan' not found in {cwd}")
+        return None
+        # raise FileNotFoundError(f"'sas_plan' not found in {cwd}")
 
     with open(sas_plan, "r", encoding="utf-8") as f:
         plan = f.read()
 
-    os.remove(sas_plan)
+    # os.remove(sas_plan)
     
     return plan

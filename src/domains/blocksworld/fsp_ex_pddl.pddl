@@ -1,4 +1,4 @@
-(define (problem staircase_to_tower_1_1_1_1_3_3)
+(define (problem blocksworld_fsp_example_problem)
     (:domain blocksworld)
     (:requirements :strips)
     (:objects b1 b10 b2 b3 b4 b5 b6 b7 b8 b9)

@@ -1,10 +1,7 @@
-You have 4 rooms, 6 balls, and 2 grippers. All the balls are in the first room, and the grippers are free. The robby is in the first room.
+You have 4 rooms, 8 balls, and 5 grippers. The balls are equally distributed across the rooms, and the grippers are free. The robby is in the first room.
 Your goal is to have the following:
-gripper1 should be free.
-gripper2 should be free.
-ball1 should be at room1.
-ball2 should be at room2.
-ball3 should be at room3.
-ball4 should be at room3.
-ball5 should be at room4.
-ball6 should be at room4.
+Gripper gripper1 should be carrying ball1.
+Gripper gripper2 should be carrying ball2.
+Gripper gripper3 should be carrying ball3.
+Gripper gripper4 should be carrying ball4.
+gripper5 should be free.

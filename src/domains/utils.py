@@ -1,8 +1,12 @@
 import os
 
-def get_domain_pddl(domain):
+def get_domain_path(domain):
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     dom_path = os.path.join(BASE_DIR, domain, "domain.pddl")
+    return dom_path
+
+def get_domain_pddl(domain):
+    dom_path = get_domain_path(domain)
     with open(dom_path, encoding="utf-8") as f:
         domain_pddl = f.read()
     return domain_pddl
@@ -41,6 +45,7 @@ def get_fsp_example(domain):
     pddl_path = os.path.join(domain_folder_path, "fsp_ex_pddl.pddl")
     plan_path = os.path.join(domain_folder_path, "fsp_ex_plan.pddl")
     objects_path = os.path.join(domain_folder_path, "fsp_ex_objects.json")
+    reasoning_path = os.path.join(domain_folder_path, "fsp_ex_reasoning.txt")
 
     with open(nl_path, encoding="utf-8") as f:
         nl = f.read()
@@ -50,8 +55,10 @@ def get_fsp_example(domain):
         plan = f.read()
     with open(objects_path, encoding="utf-8") as f:
         objects = f.read()
+    with open(reasoning_path, encoding="utf-8") as f:
+        reasoning = f.read()
 
-    return nl, pddl, plan, objects
+    return nl, pddl, plan, objects, reasoning
 
 def get_domain_predicates(domain):
     if domain == "blocksworld":
