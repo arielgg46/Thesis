@@ -20,9 +20,9 @@ def get_domain_description(domain):
 
 def get_domain_requirements(domain):
     if domain == "floor-tile":
-        return "STRIPS + :typing"
+        return ":strips + :typing"
     else:
-        return "STRIPS"
+        return ":strips"
 
 def get_actions_description(domain):
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))

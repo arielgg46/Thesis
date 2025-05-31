@@ -82,11 +82,14 @@ def split_pddl_problem_sections(pddl: str) -> dict:
     # Encontrar el primer predicado después de :init
     init_predicates_start = pddl.find("(", init_start.end())
 
+    parens_balance = 1
     # Encontrar (and dentro de :goal
     and_match = re.search(r'and', pddl[goal_start.end():])
     if not and_match:
-        raise ValueError("No se encontró (and dentro de :goal.")
-    and_start_abs = goal_start.end() + and_match.start()
+        # raise ValueError("No se encontró (and dentro de :goal.")
+        and_start_abs = goal_start.end() - len("(and")
+    else:
+        and_start_abs = goal_start.end() + and_match.start()
 
     # El primer predicado dentro de (and
     goal_predicates_start = pddl.find("(", and_start_abs + len("(and"))
@@ -104,7 +107,6 @@ def split_pddl_problem_sections(pddl: str) -> dict:
     # Ahora en rest_after_middle vamos a contar paréntesis
     rest_after_middle = pddl[goal_predicates_start:]
     
-    parens_balance = 1
     goal_end_idx = None
     for idx, char in enumerate(rest_after_middle):
         if char == '(':

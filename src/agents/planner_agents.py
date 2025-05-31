@@ -51,7 +51,7 @@ class PlannerAgent:
             fsp_ex = fsp_to_dict(fsp_ex_nl, fsp_ex_pddl, fsp_ex_plan, fsp_ex_objects, fsp_ex_reasoning)
             self.set_fsp_examples([fsp_ex])
 
-    def set_task(self, domain, problem_nl):
+    def set_task(self, id, domain, problem_nl):
         self.set_domain(domain)
         self.problem_nl = problem_nl
     
@@ -60,6 +60,12 @@ class PlannerAgent:
         Returns the Few-Shot Prompting part of the prompt given
         few-shot examples, and the fields of the examples to include
         """
+
+        field_preffix = {
+            "nl": "Problem",
+            "plan": "Plan"
+        }
+        
         fsp_str = ""
         for i in range(len(self.fsp_examples)):
             fsp_ex = self.fsp_examples[i]
@@ -68,17 +74,16 @@ class PlannerAgent:
             else:
                 fsp_str += "\n\n"
             fsp_str += f"Example #{i+1}:"
+            F = True
+
             for j in range(len(fields)):
                 field = fields[j]
-                field_preffix = {
-                    "nl": "Problem",
-                    "reasoning": "Reasoning",
-                    "objects": "Objects to use",
-                    "pddl": "Problem PDDL",
-                    "plan": "Plan"
-                }
+                if not (field in fsp_ex):
+                    continue
                 fsp_str += "\n"
-                if j > 0:
+                if F:
+                    F = False
+                else:
                     fsp_str += "\n"
                 fsp_str += f"{field_preffix[field]}:\n{fsp_ex[field]}"
         return fsp_str
@@ -97,13 +102,15 @@ class PlannerAgent:
             fsp_str = """"""
 
         # 2) Plan PDDL Generation
-        system_prompt = f"""Domain: {self.domain}
+        system_prompt = f"""You are an advanced Planning AI Agent. You are given the description of a planning domain and the available actions, and the natural language descriptions of problems in this domain, and for each you provide an optimal plan to solve the problem.
+        
+Domain: {self.domain}
 {self.domain_description}
 
 {self.actions_description}
 
 Task:
-You will receive a planning problem of this domain.
+You will be given natural language descriptions of planning problems in this domain.
 Provide an optimal plan, in the way of a sequence of actions, to solve the problem.
 {self.planner_output_syntax}{fsp_str}
 """
@@ -130,7 +137,7 @@ Plan:
         return response
     
 def get_planner_agent(variant, 
-                      plan_generation_model = "accounts/fireworks/models/deepseek-v3"):
+                      plan_generation_model):
     if variant == "llm_planner":
         return PlannerAgent(planning_model = plan_generation_model)
     if variant == "llm_planner_fsp":

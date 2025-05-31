@@ -10,6 +10,25 @@ def make_case_dir(output_root, agent, domain, idx):
     os.makedirs(case_dir, exist_ok=True)
     return case_dir
 
+def create_file_if_not_exists(filepath):
+  """
+  Creates a file at the given filepath if it does not already exist.
+
+  Args:
+    filepath: The path to the file to be created.
+
+  Returns:
+    True if the file was created, False if it already existed.  Raises OSError if there's an error during file creation.
+  """
+  try:
+    if not os.path.exists(filepath):
+      with open(filepath, 'w'):  # 'w' mode creates the file if it doesn't exist
+        return True
+    else:
+      return False
+  except OSError as e:
+    raise OSError(f"Error creating file: {e}")
+
 def load_json_data(file_path):
   """
   Reads a JSON file and loads its content into a Python object.

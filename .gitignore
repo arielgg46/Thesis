@@ -184,5 +184,7 @@ src/client/queries
 src/client/token_consumption.json
 src/exp/operations
 src/exp/exps
-src/embeddings/embeddings_with_ids_test5.npz
-src/embeddings/embeddings_with_ids_train5.npz
+src/classical_planner/sas_plan
+src/utils/pddl_pred.pddl
+src/rag/embeddings_with_ids_test5.npz
+src/rag/embeddings_with_ids_train5.npz

@@ -4,6 +4,13 @@ import os
 import json
 import matplotlib.pyplot as plt
 
+all_domains = ["blocksworld", "gripper", "floor-tile"]
+domain_colors = {
+    "blocksworld": "blue", 
+    "gripper": "green", 
+    "floor-tile": "red"
+}
+
 def load_agent_results(filepath: str) -> dict:
     """
     Load the JSON results by-agent.
@@ -25,22 +32,40 @@ def visualize_agent_evaluations(filename: str, results_folder_path: str):
 # ------------------------------------------------------------------------------
 # Generic helper for bar charts
 # ------------------------------------------------------------------------------
+import matplotlib.pyplot as plt
+
 def _plot_bar(
     agent_names: list[str],
     values: list[float],
     ylabel: str,
     title: str,
-    output_path: str
+    output_path: str,
+    colors = "skyblue",
+    ymax = None
 ):
     plt.figure(figsize=(10, 5))
-    plt.bar(agent_names, values, color='skyblue')
+    bars = plt.bar(agent_names, values, color=colors)
     plt.title(title)
     plt.ylabel(ylabel)
-    # plt.ylim(0, 100)
+    if ymax is not None:
+        plt.ylim(0, ymax+5)
     plt.xticks(rotation=45, ha='right')
+
+    # Add value labels on top of each bar
+    for bar, value in zip(bars, values):
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,  # x position: center of the bar
+            height,                             # y position: top of the bar
+            f'{value:.2f}',                    # formatted value with 2 decimals
+            ha='center',                       # horizontal alignment
+            va='bottom'                       # vertical alignment (just above the bar)
+        )
+
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
+
 
 # ------------------------------------------------------------------------------
 # Individual plotters for each metric
@@ -69,7 +94,8 @@ def plot_parseable(data: dict, results_folder_path: str):
         agent_names, percents,
         ylabel='Parseable (%)',
         title='Percentage of Problems Parseable by Agent',
-        output_path=out
+        output_path=out,
+        ymax=100
     )
 
 def plot_solvable(data: dict, results_folder_path: str):
@@ -95,7 +121,8 @@ def plot_solvable(data: dict, results_folder_path: str):
         agent_names, percents,
         ylabel='Solvable (%)',
         title='Percentage of Problems Solvable by Agent',
-        output_path=out
+        output_path=out,
+        ymax=100
     )
 
 def plot_correct(data: dict, results_folder_path: str):
@@ -121,7 +148,8 @@ def plot_correct(data: dict, results_folder_path: str):
         agent_names, percents,
         ylabel='Correct (%)',
         title='Percentage of Problems Correct by Agent',
-        output_path=out
+        output_path=out,
+        ymax=100
     )
 
 def plot_token_consumption(data: dict, results_folder_path: str):
@@ -173,12 +201,194 @@ def plot_total_generation_time(data: dict, results_folder_path: str):
         output_path=out
     )
 
+
+def plot_parseable_by_domain(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems parseable by each agent.
+    """
+    # Colors for each bar
+    colors = []
+
+    metric = 'parseable'
+    agent_names, percents = [], []
+    for agent, info in data.items():
+        dom_names = []
+        i = 0
+        for key in info.get('domains', {}).keys():
+            dom_names.append(key)
+        for dom in info.get('domains', {}).values():
+            dom_name = dom_names[i]
+            i += 1
+            if dom_name == "blocksworld":
+                colors.append("blue")
+            elif dom_name == "gripper":
+                colors.append("green")
+            elif dom_name == "floor-tile":
+                colors.append("red")
+            evals = []
+            for prob in dom.get('problems', {}).values():
+                ev = prob.get('eval', {})
+                if metric in ev:
+                    evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(f"{agent}_{i}")
+            percents.append(pct)
+
+    out = os.path.join(results_folder_path, 'parseable_by_agent_and_domain.png')
+    _plot_bar(
+        agent_names, percents,
+        ylabel='Parseable (%)',
+        title='Percentage of Problems Parseable by Agent and Domain',
+        output_path=out,
+        colors=colors,
+        ymax=100
+    )
+
+
+def plot_domain_parseable(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems parseable by each agent for a specific domain.
+    """
+    global all_domains
+    global domain_colors
+    metric = 'parseable'
+    for domain in all_domains:
+        agent_names, percents = [], []
+        for agent, info in data.items():
+            evals = []
+            # Access only the specified domain
+            dom = info.get('domains', {}).get(domain)
+            if dom:
+                for prob in dom.get('problems', {}).values():
+                    ev = prob.get('eval', {})
+                    if metric in ev:
+                        evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(agent)
+            percents.append(pct)
+
+        out = os.path.join(results_folder_path, f'{metric}_by_agent_in_{domain}.png')
+        _plot_bar(
+            agent_names, percents,
+            ylabel='{metric} (%)',
+            title=f'Percentage of Problems {metric} by Agent in Domain "{domain}"',
+            output_path=out,
+            ymax=100,
+            colors=domain_colors[domain]
+        )
+
+def plot_domain_solvable(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems solvable by each agent for a specific domain.
+    """
+    global all_domains
+    global domain_colors
+    metric = 'solvable'
+    for domain in all_domains:
+        agent_names, percents = [], []
+        for agent, info in data.items():
+            evals = []
+            # Access only the specified domain
+            dom = info.get('domains', {}).get(domain)
+            if dom:
+                for prob in dom.get('problems', {}).values():
+                    ev = prob.get('eval', {})
+                    if metric in ev:
+                        evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(agent)
+            percents.append(pct)
+
+        out = os.path.join(results_folder_path, f'{metric}_by_agent_in_{domain}.png')
+        _plot_bar(
+            agent_names, percents,
+            ylabel='{metric} (%)',
+            title=f'Percentage of Problems {metric} by Agent in Domain "{domain}"',
+            output_path=out,
+            ymax=100,
+            colors=domain_colors[domain]
+        )
+
+def plot_domain_correct(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems correct by each agent for a specific domain.
+    """
+    global all_domains
+    global domain_colors
+    metric = 'correct'
+    for domain in all_domains:
+        agent_names, percents = [], []
+        for agent, info in data.items():
+            evals = []
+            # Access only the specified domain
+            dom = info.get('domains', {}).get(domain)
+            if dom:
+                for prob in dom.get('problems', {}).values():
+                    ev = prob.get('eval', {})
+                    if metric in ev:
+                        evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(agent)
+            percents.append(pct)
+
+        out = os.path.join(results_folder_path, f'{metric}_by_agent_in_{domain}.png')
+        _plot_bar(
+            agent_names, percents,
+            ylabel='{metric} (%)',
+            title=f'Percentage of Problems {metric} by Agent in Domain "{domain}"',
+            output_path=out,
+            ymax=100,
+            colors=domain_colors[domain]
+        )
+
+
+def plot_parseable_by_abstraction(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems parseable by each agent.
+    """
+    metric = 'parseable'
+    for init_abs, goal_abs in [[0, 0], [0, 1], [1, 0], [1, 1]]:
+        agent_names, percents = [], []
+        for agent, info in data.items():
+            evals = []
+            for dom in info.get('domains', {}).values():
+                for prob in dom.get('problems', {}).values():
+                    if prob["init_is_abstract"] != init_abs or prob["goal_is_abstract"] != goal_abs:
+                        continue
+                    ev = prob.get('eval', {})
+                    if metric in ev:
+                        evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(agent)
+            percents.append(pct)
+
+        abstraction_str = ["expl", "abs"]
+        out = os.path.join(results_folder_path, f'{metric}_by_agent_in_{abstraction_str[init_abs]}_to_{abstraction_str[goal_abs]}.png')
+        _plot_bar(
+            agent_names, percents,
+            ylabel=f'{metric} (%)',
+            title=f'Percentage of Problems {metric} by Agent, {abstraction_str[init_abs]} to {abstraction_str[goal_abs]}',
+            output_path=out,
+            ymax=100
+        )
+
+
 # ------------------------------------------------------------------------------
 # Plotters
 # ------------------------------------------------------------------------------
 
 PLOTTERS = [
     plot_parseable,
+    # plot_parseable_by_domain,
+    plot_domain_parseable,
+    plot_domain_solvable,
+    plot_domain_correct,
+    plot_parseable_by_abstraction,
     plot_solvable,
     plot_correct,
     plot_token_consumption,

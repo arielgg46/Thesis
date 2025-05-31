@@ -1,11 +1,12 @@
 import os
 import subprocess
+from config import VAL_PATH
 
 def validate_plan(
     domain_file: str,
     problem_file: str,
     plan_file: str,
-    val_binary: str = "validate",   # ejecutable VAL, o ruta absoluta
+    val_binary: str = VAL_PATH,   # ejecutable VAL, o ruta absoluta
     work_dir: str = None,
     verbose: bool = False
 ) -> bool:

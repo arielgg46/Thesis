@@ -5,7 +5,7 @@ def get_predicate_arity_str(predicate: str, arity: int) -> str:
     return f'"(" "{predicate}" ")"'
   return f'"(" "{predicate}" (ws object){"{"}{arity}{"}"} ")"'
 
-def get_pddl_problem_grammar(domain, problem, predicates = None, objects = None):
+def get_pddl_problem_grammar(domain, problem, predicates = None, objects = None, use_comments = True):
   object_rhs = "name"
   if objects is not None:
     object_rhs = f'"{objects[0]}"'
@@ -24,6 +24,14 @@ def get_pddl_problem_grammar(domain, problem, predicates = None, objects = None)
     requirements = '":strips :typing"'
     typed_list_rhs = '(name ws)* | ((name ws)+ "-" ws type ws)+'
 
+  if use_comments:
+    GD_str = '''GD ::= comment atomicFormula ws | atomicFormula ws
+comment ::= ";" [^\n]* "\n"'''
+    literal_str = "literal ::= comment atomicFormula ws | atomicFormula ws"
+  else:
+    GD_str = "GD ::= atomicFormula ws"
+    literal_str = "literal ::= atomicFormula ws"
+
   return f"""root ::= define
 define ::= "(" ws "define" ws problemDecl domainDecl requireDef objectDecl init goal ")"
 
@@ -39,11 +47,11 @@ typedList ::= {typed_list_rhs}
 type ::= "(either" primitiveType+ ")" | primitiveType
 primitiveType ::= name | "object"
 
-literal ::= atomicFormula ws | "(not " atomicFormula ")" ws
+{literal_str}
 atomicFormula ::= {atomic_formula_rhs}
 
-preGD ::= "(and" ws GD+ ")" | GD
-GD ::= atomicFormula ws
+preGD ::= "(and" ws GD+ ")"
+{GD_str}
 
 object ::= {object_rhs}
 name ::= letter anyChar*
@@ -57,7 +65,7 @@ decimal ::= "." digit+
 ws ::= [ \t\n]*
 """
 
-def get_pddl_problem_grammar_daps_no_typing(domain: str, problem: str, predicates: List[Tuple[str, int]], objects: List[str]) -> str:
+def get_pddl_problem_grammar_daps_no_typing(domain: str, problem: str, predicates: List[Tuple[str, int]], objects: List[str], use_comments = True) -> str:
   object_rhs = f'"{objects[0]}"'
   objects_def = f'{objects[0]}'
   for obj in objects[1:]:
@@ -67,6 +75,14 @@ def get_pddl_problem_grammar_daps_no_typing(domain: str, problem: str, predicate
   atomic_formula_rhs = get_predicate_arity_str(predicates[0][0], predicates[0][1])
   for predicate,arity in predicates[1:]:
     atomic_formula_rhs += " | " + get_predicate_arity_str(predicate, arity)
+
+  if use_comments:
+    GD_str = '''GD ::= comment atomicFormula ws | atomicFormula ws
+comment ::= ";" [^\n]* "\n"'''
+    literal_str = "literal ::= comment atomicFormula ws | atomicFormula ws"
+  else:
+    GD_str = "GD ::= atomicFormula ws"
+    literal_str = "literal ::= atomicFormula ws"
 
   return f"""root ::= define
 define ::= "(" ws "define" ws problemDecl domainDecl requireDef objectDecl init goal ")"
@@ -79,17 +95,17 @@ init ::= "(" ws ":init" ws initEl* ")" ws
 initEl ::= literal
 goal ::= "(" ws ":goal" ws preGD ")" ws
 
-literal ::= atomicFormula ws | "(not " atomicFormula ")" ws
+{literal_str}
 atomicFormula ::= {atomic_formula_rhs}
 
-preGD ::= "(and" ws GD+ ")" | GD
-GD ::= atomicFormula ws
+preGD ::= "(and" ws GD+ ")"
+{GD_str}
 
 object ::= {object_rhs}
 ws ::= [ \t\n]*
 """
 
-def get_pddl_problem_grammar_daps_typing(domain: str, problem: str, predicates: List[Tuple[str, List[str]]], objects: List[Tuple[str, List[str]]], types: Dict[str, str]) -> str:
+def get_pddl_problem_grammar_daps_typing(domain: str, problem: str, predicates: List[Tuple[str, List[str]]], objects: List[Tuple[str, List[str]]], types: Dict[str, str], use_comments = True) -> str:
   object_rhs = {"object": ""}
   for type in types:
     object_rhs[type] = ""
@@ -123,6 +139,14 @@ def get_pddl_problem_grammar_daps_typing(domain: str, problem: str, predicates: 
       atomic_formula_rhs += f" ws obj-{arg_type}"
     atomic_formula_rhs += f' ws ")"'
     
+  if use_comments:
+    GD_str = '''GD ::= comment atomicFormula ws | atomicFormula ws
+comment ::= ";" [^\n]* "\n"'''
+    literal_str = "literal ::= comment atomicFormula ws | atomicFormula ws"
+  else:
+    GD_str = "GD ::= atomicFormula ws"
+    literal_str = "literal ::= atomicFormula ws"
+
   return f"""root ::= define
 define ::= "(" ws "define" ws problemDecl domainDecl requireDef objectDecl init goal ")"
 
@@ -134,11 +158,11 @@ init ::= "(" ws ":init" ws initEl* ")" ws
 initEl ::= literal
 goal ::= "(" ws ":goal" ws preGD ")" ws
 
-literal ::= atomicFormula ws | "(not " atomicFormula ")" ws
+{literal_str}
 atomicFormula ::= {atomic_formula_rhs}
 
-preGD ::= "(and" ws GD+ ")" | GD
-GD ::= atomicFormula ws
+preGD ::= "(and" ws GD+ ")"
+{GD_str}
 
 {objects_productions}
 ws ::= [ \t\n]*
@@ -177,3 +201,6 @@ anyChar ::= letter | digit | "-" | "_"
 digit ::= [0-9]
 dq ::= "\\\""
 """
+
+# "not" can't be used. Changed production
+# literal ::= atomicFormula ws | "(not " atomicFormula ")" ws

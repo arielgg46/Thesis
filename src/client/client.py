@@ -49,7 +49,8 @@ def llm_query(system_prompt, user_prompt, model = LLM_DEFAULT_MODEL, grammar = N
                         messages=[
                             {"role": "system", "content": system_prompt,},
                             {"role": "user", "content": user_prompt},
-                        ]
+                        ], 
+                        temperature = 0
                     )
                 else:
                     chat_completion = client.chat.completions.create(
@@ -57,7 +58,8 @@ def llm_query(system_prompt, user_prompt, model = LLM_DEFAULT_MODEL, grammar = N
                         messages=[
                             {"role": "system", "content": system_prompt,},
                             {"role": "user", "content": user_prompt},
-                        ]
+                        ],
+                        temperature = 0
                     )
 
                 # system_prompt_tokens = count_tokens(system_prompt)
