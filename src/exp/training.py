@@ -10,6 +10,16 @@ from exp.experience_pool import insert_new_exp, init_experience_pool
 
 from config import REFLECTION_LLM_MODEL
 
+def get_task_short_desc(task):
+    init_abs = goal_abs = "expl"
+    if task["init_is_abstract"]:
+        init_abs = "abs"
+    if task["goal_is_abstract"]:
+        goal_abs = "abs"
+
+    task_desc = f"{task["domain"]} {task["id"]} {task["init"]}({init_abs}, {task["init_num_propositions"]}) -> {task["goal"]}({goal_abs}, {task["goal_num_propositions"]}) {task["num_objects"]}"
+    return task_desc
+
 def fsp_to_dict(fsp_ex_nl, fsp_ex_pddl, fsp_ex_plan, fsp_ex_objects, fsp_ex_reasoning):
     return{
         "nl": fsp_ex_nl,
@@ -28,7 +38,7 @@ def insert_exps(exps):
         task, trial, reflection_on_previous_trial, experiential_agent_resp, evaluation = exps[i]
         insert_new_exp(task, trial + 1, reflection_on_previous_trial, experiential_agent_resp, evaluation)
 
-def train(resume: bool, agent: ModelerAgent, training_tasks: List[dict], max_trials: int, human_feedback: bool = False):
+def gather_experiences(resume: bool, agent: ModelerAgent, training_tasks: List[dict], max_trials: int, human_feedback: bool = False):
     if not resume:
         choice = input("Are you sure you want to restart the training? Any progress will be lost (y/n):")
         if choice == "n" or choice == "N":
@@ -72,7 +82,8 @@ def train(resume: bool, agent: ModelerAgent, training_tasks: List[dict], max_tri
         reflections = []
         agent.set_task(id, domain, nl)
 
-        print(f"################## TASK {i + 1} ({id}) ##################")
+        print(f"## TASK {i + 1} ({id}) ##")
+        print(get_task_short_desc(task))
         # pprint(nl)
         # print()
 
@@ -81,18 +92,36 @@ def train(resume: bool, agent: ModelerAgent, training_tasks: List[dict], max_tri
         agent.last_resp = last_resp
         agent.reflections = reflections
         for trial in range(max_trials):
-            print(f"################## TRIAL {trial + 1} ##################")
+            print(f"## TRIAL {trial + 1} ##")
             # print()
 
-            print("################## EXPERIENTIAL AGENT RESP ##################")
+            # print("################## EXPERIENTIAL AGENT RESP ##################")
             experiential_agent_resp = agent.solve_task()
             # pprint(experiential_agent_resp)
             # print()
 
-            print("################## EVALUATION ##################")
+            print("## EVALUATION ##")
             evaluation = eval_trial(task, experiential_agent_resp)
-            pprint(evaluation)
-            # print()
+            parseable = evaluation["parseable"]
+            solvable = evaluation["solvable"]
+            correct = evaluation["correct"]
+
+            if parseable:
+                print("  ✅ Parseable")
+            else:
+                print("  ❌ Not parseable")
+            if solvable:
+                print("  ✅ Solvable")
+            else:
+                print("  ❌ Not solvable")
+            if correct:
+                print("  ✅ Correct")
+            else:
+                print("  ❌ Not correct")
+
+            # pprint(evaluation)
+            print(evaluation["feedback"])
+            print()
 
             reflection_on_previous_trial = ""
             if trial > 0:
@@ -115,7 +144,7 @@ def train(resume: bool, agent: ModelerAgent, training_tasks: List[dict], max_tri
                     print("HUMAN FEEDBACK")
                     reflection = input()
                 else:
-                    print("################## REFLECTION ##################")
+                    print("## REFLECTION ##")
                     reflection_agent_resp = reflect(problem_nl = nl, domain = domain, past_reflections = reflections, experiential_agent_resp = experiential_agent_resp, evaluation = evaluation, model = REFLECTION_LLM_MODEL) # To do: improve
                     reflection = reflection_agent_resp["reflection"]
                     # pprint(reflection)

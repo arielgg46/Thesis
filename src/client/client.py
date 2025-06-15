@@ -76,5 +76,6 @@ def llm_query(system_prompt, user_prompt, model = LLM_DEFAULT_MODEL, grammar = N
                 save_query(system_prompt, user_prompt, model, grammar, chat_completion, time.time() - start_time)
                 return chat_completion
             except Exception as e:
-                print(e)
+                print(type(e), e)
+                time.sleep(3)
     return None

@@ -1,28 +1,24 @@
-
-(define (problem blocksworld_fsp_example_problem)
-    (:domain blocksworld)
-    (:requirements :strips)
-    (:objects b1 b2 b3 b4 b5 b6 b7 b8 b9 b10)
-    (:init 
-        ; Arm state
-        (arm-empty)
-        ; 1 block stack
-        (clear b1) (on-table b1)
-        ; 2 blocks stack
-        (clear b2) (on b2 b3) (on-table b3)
-        ; 3 blocks stack
-        (clear b4) (on b4 b5) (on b5 b6) (on-table b6)
-        ; 4 blocks stack
-        (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10)
+(define (problem floor-tile_problem)
+    (:domain floor-tile)
+    (:requirements :strips :typing)
+    (:objects 
+        robot1 - robot tile1 tile2 tile3 tile4 tile5 tile6 tile7 tile8 tile9 tile10 tile11 tile12 tile13 tile14 tile15 tile16 tile17 tile18 tile19 tile20 tile21 tile22 tile23 tile24 tile25 tile26 tile27 tile28 - tile color1 color2 - color 
     )
+    (:init
+        ; Grid definition: rows
+(painted tile1 color1) (painted tile2 color2) (painted tile3 color1) (painted tile4 color2)
+(painted tile5 color2) (painted tile6 color1) (painted tile7 color2) (painted tile8 color1)
+(painted tile9 color1) (painted tile10 color2) (painted tile11 color1) (painted tile12 color2)
+(painted tile13 color2) (painted tile14 color1) (painted tile15 color2) (painted tile16 color1)
+(painted tile17 color1) (painted tile18 color2) (painted tile19 color1) (painted tile20 color2)
+(painted tile21 color2) (painted tile22 color1) (painted tile23 color2) (painted tile24 color1)
+(painted tile25 color1) (painted tile26 color2) (painted tile27 color1) (painted tile28 color2))
     (:goal (and
-        ; Direct translation of the goal's natural language description to predicates
-        (arm-empty)
-        (clear b1) (on-table b1)
-        (clear b2) (on-table b2)
-        (clear b3) (on-table b3)
-        (clear b4) (on-table b4)
-        (clear b5) (on b5 b6) (on b6 b7) (on-table b7)
-        (clear b8) (on b8 b9) (on b9 b10) (on-table b10)
-    ))
+        ; Direct translation of the goal's natural language description to predicates(painted tile1 color1) (painted tile2 color2) (painted tile3 color1) (painted tile4 color2)
+(painted tile5 color2) (painted tile6 color1) (painted tile7 color2) (painted tile8 color1)
+(painted tile9 color1) (painted tile10 color2) (painted tile11 color1) (painted tile12 color2)
+(painted tile13 color2) (painted tile14 color1) (painted tile15 color2) (painted tile16 color1)
+(painted tile17 color1) (painted tile18 color2) (painted tile19 color1) (painted tile20 color2)
+(painted tile21 color2) (painted tile22 color1) (painted tile23 color2) (painted tile24 color1)
+(painted tile25 color1) (painted tile26 color2) (painted tile27 color1) (painted tile28 color2)))
 )

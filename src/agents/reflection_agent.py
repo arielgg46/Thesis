@@ -89,8 +89,7 @@ Your reflection:
     
     # Response
     response = {
-        # "system_prompt" : system_prompt,
-        # "user_prompt" : user_prompt,
+        "prompts": [{"system_prompt" : system_prompt, "user_prompt" : user_prompt}],
         "reflection" : chat_completion.choices[0].message.content, 
         "prompt_tokens" : [chat_completion.usage.prompt_tokens], 
         "completion_tokens" : [chat_completion.usage.completion_tokens], 

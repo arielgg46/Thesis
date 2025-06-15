@@ -309,7 +309,12 @@ def update_insights(insights: List[Tuple[str, int]], operations: List[Tuple[str,
 
     for op in ['REMOVE', 'AGREE', 'EDIT', 'ADD']: # Order is important
         for i in range(len(operations)):
-            operation_type, insight_num, operation_insight_text = operations[i]
+            try:
+                operation_type, insight_num, operation_insight_text = operations[i]
+            except Exception as e:
+                print(e)
+                continue
+
             if operation_type != op:
                 continue
 

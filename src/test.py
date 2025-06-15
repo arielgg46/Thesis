@@ -324,73 +324,90 @@
 # ----------
 
 # from utils.pddl_utils import split_pddl_problem_sections
-from utils.evaluation_utils import eval_trial
+# from utils.evaluation_utils import eval_trial
 
-problem_pddl = """
-(define (problem blocksworld_fsp_example_problem)
-    (:domain blocksworld)
-    (:requirements :strips)
-    (:objects b1 b2 b3 b4 b5 b6 b7 b8 b9 b10)
-    (:init 
-        ; Arm state
-        (arm-empty)
-        ; 1 block stack
-        (clear b1) (on-table b1)
-        ; 2 blocks stack
-        (clear b2) (on b2 b3) (on-table b3)
-        ; 3 blocks stack
-        (clear b4) (on b4 b5) (on b5 b6) (on-table b6)
-        ; 4 blocks stack
-        (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10)
-    )
-    (:goal (and
-        ; Direct translation of the goal's natural language description to predicates
-        (arm-empty)
-        (clear b1) (on-table b1)
-        (clear b2) (on-table b2)
-        (clear b3) (on-table b3)
-        (clear b4) (on-table b4)
-        (clear b5) (on b5 b6) (on b6 b7) (on-table b7)
-        (clear b8) (on b8 b9) (on b9 b10) (on-table b10)
-    ))
-)"""
+# problem_pddl = """
+# (define (problem blocksworld_fsp_example_problem)
+#     (:domain blocksworld)
+#     (:requirements :strips)
+#     (:objects b1 b2 b3 b4 b5 b6 b7 b8 b9 b10)
+#     (:init 
+#         ; Arm state
+#         (arm-empty)
+#         ; 1 block stack
+#         (clear b1) (on-table b1)
+#         ; 2 blocks stack
+#         (clear b2) (on b2 b3) (on-table b3)
+#         ; 3 blocks stack
+#         (clear b4) (on b4 b5) (on b5 b6) (on-table b6)
+#         ; 4 blocks stack
+#         (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10)
+#     )
+#     (:goal (and
+#         ; Direct translation of the goal's natural language description to predicates
+#         (arm-empty)
+#         (clear b1) (on-table b1)
+#         (clear b2) (on-table b2)
+#         (clear b3) (on-table b3)
+#         (clear b4) (on-table b4)
+#         (clear b5) (on b5 b6) (on b6 b7) (on-table b7)
+#         (clear b8) (on b8 b9) (on b9 b10) (on-table b10)
+#     ))
+# )"""
 
-task = {
-    "domain": "gripper",
-    "problem_pddl": problem_pddl,
-    "is_placeholder": 0
-}
+# task = {
+#     "domain": "gripper",
+#     "problem_pddl": problem_pddl,
+#     "is_placeholder": 0
+# }
 
-modeling_agent_resp = {
-    "problem_pddl": 
-"""
-(define (problem blocksworld_fsp_example_problem)
-    (:domain blocksworld)
-    (:requirements :strips)
-    (:objects b1 b2 b3 b4 b5 b6 b7 b8 b9 b10)
-    (:init 
-        ; Arm state
-        (arm-empty)
-        ; 1 block stack
-        (clear b1) (on-table b1)
-        ; 2 blocks stack
-        (clear b2) (on b2 b3) (on-table b3)
-        ; 3 blocks stack
-        (clear b4) (on b4 b5) (on b5 b6) (on-table b6)
-        ; 4 blocks stack
-        (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10)
-    )
-    (:goal (and
-        ; Direct translation of the goal's natural language description to predicates
-        (arm-empty)
-        (clear b1) (on-table b1)
-        (clear b2) (on-table b2)
-        (clear b3) (on-table b3)
-        (clear b4) (on-table b4)
-        (clear b5) (on b5 b6) (on b6 b7) (on-table b7)
-        (clear b8) (on b8 b9) (on b9 b10) (on-table b10)
-    ))
-)"""
-}
+# modeling_agent_resp = {
+#     "problem_pddl": 
+# """
+# (define (problem blocksworld_fsp_example_problem)
+#     (:domain blocksworld)
+#     (:requirements :strips)
+#     (:objects b1 b2 b3 b4 b5 b6 b7 b8 b9 b10)
+#     (:init 
+#         ; Arm state
+#         (arm-empty)
+#         ; 1 block stack
+#         (clear b1) (on-table b1)
+#         ; 2 blocks stack
+#         (clear b2) (on b2 b3) (on-table b3)
+#         ; 3 blocks stack
+#         (clear b4) (on b4 b5) (on b5 b6) (on-table b6)
+#         ; 4 blocks stack
+#         (clear b7) (on b7 b8) (on b8 b9) (on b9 b10) (on-table b10)
+#     )
+#     (:goal (and
+#         ; Direct translation of the goal's natural language description to predicates
+#         (arm-empty)
+#         (clear b1) (on-table b1)
+#         (clear b2) (on-table b2)
+#         (clear b3) (on-table b3)
+#         (clear b4) (on-table b4)
+#         (clear b5) (on b5 b6) (on b6 b7) (on-table b7)
+#         (clear b8) (on b8 b9) (on b9 b10) (on-table b10)
+#     ))
+# )"""
+# }
 
-print(eval_trial(task, modeling_agent_resp))
+# print(eval_trial(task, modeling_agent_resp))
+
+from client.client import llm_query
+
+pr = {
+                "system_prompt": "You are an advanced Planning Modeler AI Agent specialized in reasoning. You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide a structured reasoning about the problem for its translation to PDDL.\n        \nDomain: floor-tile\nIn this world, some robots can move around a grid of tiles (connected or disconnected rows of possibly different amounts of tiles) and paint them with different colors.\n\nDomain PDDL:\n(define (domain floor-tile)\n  (:requirements :typing)\n  (:types\n    robot tile color - object\n  )\n\n  (:predicates\n    (robot-at ?r - robot ?x - tile)\n    (up ?x - tile ?y - tile)\n    (right ?x - tile ?y - tile)\n    (painted ?x - tile ?c - color)\n    (robot-has ?r - robot ?c - color)\n    (available-color ?c - color)\n  )\n\n  (:action change-color\n    :parameters (?r - robot ?c - color ?c2 - color)\n    :precondition (and (robot-has ?r ?c) (available-color ?c2))\n    :effect (and (not (robot-has ?r ?c)) (robot-has ?r ?c2)\n    )\n  )\n\n  (:action paint-up\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (up ?y ?x))\n    :effect  (painted ?y ?c)\n  )\n\n  (:action paint-down\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (up ?x ?y))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  (:action paint-right\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (right ?y ?x))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  (:action paint-left\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (right ?x ?y))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  ; Robot movements\n  (:action up\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (up ?y ?x))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action down\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (up ?x ?y))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action right\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (right ?y ?x))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action left\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (right ?x ?y))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n)\n\nTask:\nYou will be given natural language descriptions of planning problems in this domain.\n*Reason step by step* to resolve any ambiguities or missing details, to help to improve the semantic correctness of a posterior problem PDDL generation by another Planning Modeler Agent.\nWrite your reasoning as exactly 3 paragraphs of no more than 100 words each. In them you should cover, in order:\n\n1. **Objects**: list every object by name.  \n2. **Initial state**: describe the initial state, and any assumptions you make to fill in missing info.  \n3. **Goal state**: describe the goal state, and any assumptions you make to fill in missing info.\n\nFully specify the subgoals and initial state as detailed as you can. Don't reason about the planning itself, just the PDDL. Don't extend beyond 3 short paragraphs.\n\nExample #1:\nProblem:\nYou have 2 colors and 9 unpainted tiles arranged in a 3x3 grid, in 2 rings. The first robot is at the the top-left corner of the first ring from the outside, and has the first color. All colors are available.\nYour goal is to have the following:\nTile tile1 should be painted with color color1.\nTile tile2 should be painted with color color1.\nTile tile3 should be painted with color color1.\nTile tile4 should be painted with color color1.\nTile tile5 should be painted with color color2.\nTile tile6 should be painted with color color1.\nTile tile7 should be painted with color color1.\nTile tile8 should be painted with color color1.\nTile tile9 should be painted with color color1.\n\nReasoning:\n- Objects: 2 colors: color1 and color2; 9 tiles: tile1. tile2, ..., tile9; only mentions one robot \"The first robot\": robot1.\n- Initial state: The description states that 9 unpainted tiles are arranged in a 3x3 grid, in 2 rings. Since the 9 tiles are unpainted, there will not be any predicate for painted tiles. Since it does not specify how the tiles are arranged, we can assume any valid configuration of a 3x3 grid. For example, one possible configuration is:\n[tile1, tile2, tile3],\n[tile4, tile5, tile6],\n[tile7, tile8, tile9]\nHere, each bracketed list represents a row of the grid, and is easy to derive the predicates that define this grid: By rows, first row gives predicates (right tile2 tile1) (right tile3 tile2), second row gives (right tile5 tile4) (right tile6 tile5), and third row gives (right tile8 tile7) (right tile9 tile8). By columns, first column gives (up tile1 tile4) (up tile4 tile7), second column gives (up tile2 tile5) (up tile5 tile8), and third column gives (up tile3 tile6) (up tile6 tile9). Furthermore, from the 2 rings mentioned, the second ring from the outside consists only of tile5, and the rest of the tiles make the first ring from the outside. \"The first robot is at the the top-left corner of the first ring from the outside\", this means that robot1 is at tile1, because it is at the intersection of the first row and first column, so (robot-at robot1 tile1), \"and has the first color\" means robot1 has the color1, so (robot-has robot1 color1). \"All colors are available\", so (available-color color1) and (available-color color2).\n- Goal state: The goal is fully specified and unambiguous. We translate each condition into its corresponding predicate (e.g., \"Tile tile1 should be painted with color color1.\" -> (painted tile1 color1), ..., \"Tile tile4 should be painted with color color1.\" -> (painted tile4 color1), \"Tile tile5 should be painted with color color2.\" -> (painted tile5 color2), ...).\n",
+                "user_prompt": "New problem:\nYou have 2 colors and 16 unpainted tiles arranged in a 4x4 grid, in 2 rings. The first robot is at the the top-left corner of the first ring from the outside, and has the first color. The second robot is at the the top-left corner of the second ring from the outside, and has the second color. All colors are available.\nYour goal is to paint all the tiles with the same color.\n\nReasoning:\n"
+            }
+
+pr2 = {
+                "system_prompt": "You are an advanced Planning Modeler AI Agent specialized in reasoning. You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide a structured reasoning about the problem for its translation to PDDL.\n        \nDomain: floor-tile\nIn this world, some robots can move around a grid of tiles (connected or disconnected rows of possibly different amounts of tiles) and paint them with different colors.\n\nDomain PDDL:\n(define (domain floor-tile)\n  (:requirements :typing)\n  (:types\n    robot tile color - object\n  )\n\n  (:predicates\n    (robot-at ?r - robot ?x - tile)\n    (up ?x - tile ?y - tile)\n    (right ?x - tile ?y - tile)\n    (painted ?x - tile ?c - color)\n    (robot-has ?r - robot ?c - color)\n    (available-color ?c - color)\n  )\n\n  (:action change-color\n    :parameters (?r - robot ?c - color ?c2 - color)\n    :precondition (and (robot-has ?r ?c) (available-color ?c2))\n    :effect (and (not (robot-has ?r ?c)) (robot-has ?r ?c2)\n    )\n  )\n\n  (:action paint-up\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (up ?y ?x))\n    :effect  (painted ?y ?c)\n  )\n\n  (:action paint-down\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (up ?x ?y))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  (:action paint-right\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (right ?y ?x))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  (:action paint-left\n    :parameters (?r - robot ?y - tile ?x - tile ?c - color)\n    :precondition (and (robot-has ?r ?c) (robot-at ?r ?x) (right ?x ?y))\n    :effect (and (painted ?y ?c)\n    )\n  )\n\n  ; Robot movements\n  (:action up\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (up ?y ?x))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action down\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (up ?x ?y))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action right\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (right ?y ?x))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n  (:action left\n    :parameters (?r - robot ?x - tile ?y - tile)\n    :precondition (and (robot-at ?r ?x) (right ?x ?y))\n    :effect (and (robot-at ?r ?y) (not (robot-at ?r ?x)))\n  )\n\n)\n\nTask:\nYou will be given natural language descriptions of planning problems in this domain.\n*Reason step by step* to resolve any ambiguities or missing details, to help to improve the semantic correctness of a posterior problem PDDL generation by another Planning Modeler Agent.\nWrite your reasoning as exactly 3 paragraphs of no more than 100 words each. In them you should cover, in order:\n\n1. **Objects**: list every object by name.  \n2. **Initial state**: describe the initial state, and any assumptions you make to fill in missing info.  \n3. **Goal state**: describe the goal state, and any assumptions you make to fill in missing info.\n\nFully specify the subgoals and initial state as detailed as you can. Don't reason about the planning itself, just the PDDL. Don't extend beyond 3 short paragraphs.\n\nExample #1:\nProblem:\nYou have 2 colors and 9 unpainted tiles arranged in a 3x3 grid, in 2 rings. The first robot is at the the top-left corner of the first ring from the outside, and has the first color. All colors are available.\nYour goal is to have the following:\nTile tile1 should be painted with color color1.\nTile tile2 should be painted with color color1.\nTile tile3 should be painted with color color1.\nTile tile4 should be painted with color color1.\nTile tile5 should be painted with color color2.\nTile tile6 should be painted with color color1.\nTile tile7 should be painted with color color1.\nTile tile8 should be painted with color color1.\nTile tile9 should be painted with color color1.\n\nReasoning:\n- Objects: 2 colors: color1 and color2; 9 tiles: tile1. tile2, ..., tile9; only mentions one robot \"The first robot\": robot1.\n- Initial state: The description states that 9 unpainted tiles are arranged in a 3x3 grid, in 2 rings. Since the 9 tiles are unpainted, there will not be any predicate for painted tiles. Since it does not specify how the tiles are arranged, we can assume any valid configuration of a 3x3 grid. For example, one possible configuration is:\n[tile1, tile2, tile3],\n[tile4, tile5, tile6],\n[tile7, tile8, tile9]\nHere, each bracketed list represents a row of the grid, and is easy to derive the predicates that define this grid: By rows, first row gives predicates (right tile2 tile1) (right tile3 tile2), second row gives (right tile5 tile4) (right tile6 tile5), and third row gives (right tile8 tile7) (right tile9 tile8). By columns, first column gives (up tile1 tile4) (up tile4 tile7), second column gives (up tile2 tile5) (up tile5 tile8), and third column gives (up tile3 tile6) (up tile6 tile9). Furthermore, from the 2 rings mentioned, the second ring from the outside consists only of tile5, and the rest of the tiles make the first ring from the outside. \"The first robot is at the the top-left corner of the first ring from the outside\", this means that robot1 is at tile1, because it is at the intersection of the first row and first column, so (robot-at robot1 tile1), \"and has the first color\" means robot1 has the color1, so (robot-has robot1 color1). \"All colors are available\", so (available-color color1) and (available-color color2).\n- Goal state: The goal is fully specified and unambiguous. We translate each condition into its corresponding predicate (e.g., \"Tile tile1 should be painted with color color1.\" -> (painted tile1 color1), ..., \"Tile tile4 should be painted with color color1.\" -> (painted tile4 color1), \"Tile tile5 should be painted with color color2.\" -> (painted tile5 color2), ...).\n",
+                "user_prompt": "New problem:\nYou have 2 colors and 16 unpainted tiles arranged in a 4x4 grid, in 2 rings. The first robot is at the the top-left corner of the first ring from the outside, and has the first color. The second robot is at the the top-left corner of the second ring from the outside, and has the second color. All colors are available.\nYour goal is to paint all the tiles with the same color.\n\nReasoning:\n"
+            }
+
+# print(pr == pr2)
+
+print(llm_query(pr["system_prompt"],pr["user_prompt"]))
+# print(llm_query(pr["system_prompt"],pr["user_prompt"]))

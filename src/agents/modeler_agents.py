@@ -4,7 +4,7 @@ from pprint import pprint
 
 from client.client import llm_query
 from grammar.grammar import get_pddl_problem_grammar, get_pddl_problem_grammar_daps_no_typing, get_pddl_problem_grammar_daps_typing, get_typed_objects_grammar, get_not_typed_objects_grammar
-from domains.utils import get_domain_pddl, get_domain_predicates, get_domain_types, get_domain_description, get_domain_requirements, get_fsp_example
+from domains.utils import get_domain_pddl, get_domain_pddl_wo_actions, get_domain_predicates, get_domain_types, get_domain_description, get_domain_requirements, get_fsp_example
 from exp.insights_extraction import load_insights
 from rag.retriever import Retriever
 from agents.reflection_agent import get_feedback_str
@@ -103,6 +103,8 @@ class ModelerAgent:
         # Load domain resources
         self.domain_description = get_domain_description(domain)
         self.domain_pddl = get_domain_pddl(domain)
+        if domain == "floor-tile":
+            self.domain_pddl_wo_actions = get_domain_pddl_wo_actions(domain)
         self.domain_predicates = get_domain_predicates(domain)
         self.requirements = get_domain_requirements(domain)
 
@@ -130,6 +132,8 @@ class ModelerAgent:
             similar_succ = self.retriever.get_top_similar_successes(self.problem_id, self.fsp_k)
             fsp_examples = [self.trial_to_fsp_ex(trial) for trial in similar_succ]
             self.set_fsp_examples(fsp_examples)
+        
+        self.prompts = []
 
 
     def get_insights_str(self):
@@ -295,13 +299,18 @@ Reasoning:
         else:
             task_str = "Provide a JSON of all the objects in the PDDL problem instance."
 
+        if self.domain in ["floor-tile"]:
+            domain_pddl_str = self.domain_pddl_wo_actions
+        else:
+            domain_pddl_str = self.domain_pddl
+
         system_prompt = f"""You are an advanced Planning Modeler AI Agent specialized en objects extraction. You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide a JSON of all the objects in the PDDL problem instance.
         
 Domain: {self.domain}
 {self.domain_description}
 
 Domain PDDL:
-{self.domain_pddl}
+{domain_pddl_str}
 
 Task:
 You will be given natural language descriptions of planning problems in this domain.
@@ -315,6 +324,7 @@ Objects to use:
 """
 
         chat_completion = llm_query(system_prompt, user_prompt, self.objects_extraction_model, self.objects_grammar)
+        self.prompts.append({"system_prompt": system_prompt, "user_prompt": user_prompt})
 
         return chat_completion
 
@@ -361,6 +371,7 @@ Reasoning:
 """
         
         chat_completion = llm_query(system_prompt, user_prompt, self.reasoning_model)
+        self.prompts.append({"system_prompt": system_prompt, "user_prompt": user_prompt})
 
         return chat_completion
 
@@ -370,6 +381,7 @@ Reasoning:
         prompt_tokens = []
         completion_tokens = []
         total_tokens = []
+        prompts = []
     
         # 1) Reasoning
         if self.use_reasoning:
@@ -446,6 +458,11 @@ Reasoning:
         else:
             pddl_problem_grammar = None
 
+        if self.domain in ["floor-tile"]:
+            domain_pddl_str = self.domain_pddl_wo_actions
+        else:
+            domain_pddl_str = self.domain_pddl
+
         # 7) PDDL Generation
         # System Prompt
         system_prompt = f"""You are an advanced Planning Modeler AI Agent specialized in PDDL generation. You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide the PDDL code of the problem.
@@ -454,7 +471,7 @@ Domain: {self.domain}
 {self.domain_description}
 
 Domain PDDL:
-{self.domain_pddl}
+{domain_pddl_str}
 
 Task:
 You will be given natural language descriptions of planning problems in this domain. 
@@ -471,7 +488,8 @@ Problem PDDL:
 
         # LLM call
         pddl_generation_resp = llm_query(system_prompt, user_prompt, self.pddl_generation_model, pddl_problem_grammar)
-        
+        self.prompts.append({"system_prompt": system_prompt, "user_prompt": user_prompt})
+
         # Response
         problem_pddl = pddl_generation_resp.choices[0].message.content
         response["problem_pddl"] = problem_pddl
@@ -501,6 +519,7 @@ Problem PDDL:
         response["prompt_tokens"] = prompt_tokens
         response["completion_tokens"] = completion_tokens
         response["total_tokens"] = total_tokens
+        response["prompts"] = self.prompts
         return response
     
 def get_modeler_agent(variant, 
@@ -538,8 +557,13 @@ def get_modeler_agent(variant,
         return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1, use_insights = True)
     
 
+    # Experientials
     if variant == "exp":
-        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_fsp = True, use_rag = True, fsp_k = 1, use_insights = True, use_reflection = True, use_gcd = True, use_daps = True, use_comments = True)
+        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True)
+    if variant == "exp_rag":
+        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True, use_rag = True)
+    if variant == "exp_hi":
+        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True, use_insights = True)
     
     # if variant == "llm_plus_p":
     #     return ModelerAgent(pddl_generation_model = pddl_generation_model)

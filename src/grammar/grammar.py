@@ -20,7 +20,7 @@ def get_pddl_problem_grammar(domain, problem, predicates = None, objects = None,
 
   requirements = '":strips"'
   typed_list_rhs = '(name ws)*'
-  if domain in ['tile-world']:
+  if domain in ['floor-tile']:
     requirements = '":strips :typing"'
     typed_list_rhs = '(name ws)* | ((name ws)+ "-" ws type ws)+'
 

@@ -143,10 +143,10 @@ Generated problem PDDL:
 {successful_attempt_str}"""
     
     if len(existing_insights) >= INSIGHTS_LIMIT:
-        critique_summary_suffix = """Focus on REMOVE operations first, and stop ADD operations unless the new insight is VERY important and different from EXISTING INSIGHTS. Below are the operations you do to the above list of EXISTING INSIGHTS:
+        critique_summary_suffix = """Focus on REMOVE operations first, and stop ADD operations unless the new insight is VERY important and different from EXISTING INSIGHTS. Below are STRICTLY the operations you do to the above list of EXISTING INSIGHTS, WITHOUT FURTHER EXPLANATION:
 """
     else:
-        critique_summary_suffix = """Below are the operations you do to the above list of EXISTING INSIGHTS:
+        critique_summary_suffix = """Below are STRICTLY the operations you do to the above list of EXISTING INSIGHTS, WITHOUT FURTHER EXPLANATION:
 """
 
     # System Prompt
@@ -169,15 +169,12 @@ Generated problem PDDL:
     # print()
     # print()
 
-    return
-
     # LLM call
     chat_completion = llm_query(system_prompt, user_prompt, model)
     
     # Response
     response = {
-        # "system_prompt" : system_prompt,
-        # "user_prompt" : user_prompt,
+        "prompts" : [{"system_prompt" : system_prompt, "user_prompt" : user_prompt}],
         "operations" : chat_completion.choices[0].message.content, 
         "prompt_tokens" : [chat_completion.usage.prompt_tokens], 
         "completion_tokens" : [chat_completion.usage.completion_tokens], 
@@ -254,10 +251,10 @@ Generated problem PDDL:
     
     # End
     if len(existing_insights) >= INSIGHTS_LIMIT:
-        critique_summary_suffix = """Focus on REMOVE operations first, and stop ADD operations unless the new insight is VERY important and different from EXISTING INSIGHTS. Below are the operations you do to the above list of EXISTING INSIGHTS:
+        critique_summary_suffix = """Focus on REMOVE operations first, and stop ADD operations unless the new insight is VERY important and different from EXISTING INSIGHTS. Below are STRICTLY the operations you do to the above list of EXISTING INSIGHTS, WITHOUT FURTHER EXPLANATION:
 """
     else:
-        critique_summary_suffix = """Prioritize adding new interesting insights, about useful patterns observed in good solutions. Below are the operations you do to the above list of EXISTING INSIGHTS:
+        critique_summary_suffix = """Below are STRICTLY the operations you do to the above list of EXISTING INSIGHTS, WITHOUT FURTHER EXPLANATION:
 """
 
     # System Prompt
@@ -289,8 +286,7 @@ Generated problem PDDL:
     
     # Response
     response = {
-        # "system_prompt" : system_prompt,
-        # "user_prompt" : user_prompt,
+        "prompts" : [{"system_prompt" : system_prompt, "user_prompt" : user_prompt}],
         "operations" : chat_completion.choices[0].message.content, 
         "prompt_tokens" : [chat_completion.usage.prompt_tokens], 
         "completion_tokens" : [chat_completion.usage.completion_tokens], 

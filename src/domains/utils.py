@@ -11,6 +11,13 @@ def get_domain_pddl(domain):
         domain_pddl = f.read()
     return domain_pddl
 
+def get_domain_pddl_wo_actions(domain):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    dom_path = os.path.join(BASE_DIR, domain, "domain_wo_actions.pddl")
+    with open(dom_path, encoding="utf-8") as f:
+        domain_pddl = f.read()
+    return domain_pddl
+
 def get_domain_description(domain):
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     dom_path = os.path.join(BASE_DIR, domain, "domain_description.txt")

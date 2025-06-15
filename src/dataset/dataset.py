@@ -133,14 +133,14 @@ def select_and_save_planetarium_subset_sql(
     # Definición de rangos
     
     not_found_combs = 0
-    # obj_ranges    = [(1, 5), (6, 15), (16, 30), (31, 45), (45, 1000)]
-    # init_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
-    # goal_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
-    obj_ranges    = [(5, 30)]
-    init_ranges   = [(7, 40)]
-    goal_ranges   = [(2, 40)]
-    init_abs_opts = [1]
-    goal_abs_opts = [1]
+    obj_ranges    = [(1, 5), (6, 15), (16, 30), (31, 45), (45, 1000)]
+    init_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
+    goal_ranges   = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 1000)]
+    # obj_ranges    = [(5, 30)]
+    # init_ranges   = [(7, 40)]
+    # goal_ranges   = [(2, 40)]
+    init_abs_opts = [0, 1]
+    goal_abs_opts = [0, 1]
     
     random.seed(seed)
     selected = []

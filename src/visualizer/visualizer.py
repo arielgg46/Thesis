@@ -1,6 +1,7 @@
 # visualizer.py
 
 import os
+import numpy as np
 import json
 import matplotlib.pyplot as plt
 
@@ -29,6 +30,105 @@ def visualize_agent_evaluations(filename: str, results_folder_path: str):
     for plotter in PLOTTERS:
         plotter(data, results_folder_path)
 
+
+def plot_all_metrics_grid(filename: str, results_folder_path: str, confidence_intervals: dict = None):
+    """
+    Crea una imagen compuesta 2x2 con las 4 métricas: parseable, solvable, correct y objects_count_ok.
+    También grafica los intervalos de confianza como bandas difusas.
+
+    Args:
+        filename: El nombre del archivo que contiene los datos de los resultados.
+        results_folder_path: La ruta a la carpeta que contiene el archivo de resultados.
+        confidence_intervals: Un diccionario con intervalos de confianza por métrica y agente.
+    """
+    filepath = os.path.join(results_folder_path, filename)
+    data = load_agent_results(filepath)
+
+    metrics = [
+        ("objects_count_ok", "Correct Objects (%)", "Percentage of models with correct objects, per Agent", 100),
+        ("parseable", "Paseability (%)", "Percentage of parseable models per Agent", 100),
+        ("solvable", "Solvability (%)", "Percentage of solvable models per Agent", 100),
+        ("correct", "Correctness (%)", "Percentage of correct models per Agent", 100),
+        # ("objects_count_ok", "Objetos correctos (%)", "Porcentaje de modelos con Objetos correctos", 100),
+        # ("parseable", "Validez Sintáctica (%)", "Porcentaje de modelos Sintácticamente válidos por Agente", 100),
+        # ("solvable", "Solubilidad (%)", "Porcentaje de modelos Solubles por Agente", 100),
+        # ("correct", "Correctitud (%)", "Porcentaje de modelos Correctos por Agente", 100),
+    ]
+
+    fig, axs = plt.subplots(2, 2, figsize=(14, 10))
+    axs = axs.flatten()
+
+    for ax, (metric, ylabel, title, ymax) in zip(axs, metrics):
+        agent_names, values = [], []
+        for agent, info in data.items():
+            if "planner" in agent:
+                continue
+            evals = []
+            for dom in info.get('domains', {}).values():
+                for prob in dom.get('problems', {}).values():
+                    ev = prob.get('eval', {})
+                    if metric in ev:
+                        evals.append(ev[metric])
+            total = len(evals)
+            pct = (sum(evals) / total * 100) if total else 0
+            agent_names.append(agent)
+            values.append(pct)
+
+        # Colores coherentes según nombre del agente
+        colors = []
+        for name in agent_names:
+            rgb = [0, 0, 0.3]
+            if "plus" in name:
+                rgb[2] += 0.4
+            if "orig" in name:
+                rgb[2] += 0.3
+            if "fsp" in name:
+                rgb[0] += 0.7
+            colors.append(tuple(rgb))
+
+        bars = ax.bar(agent_names, values, color=colors)
+
+        # Dibujar banda difusa para intervalo de confianza
+        if confidence_intervals:
+            for i, agent_name in enumerate(agent_names):
+                if agent_name in confidence_intervals:
+                    try:
+                        lower, upper = confidence_intervals[agent_name][metrics.index((metric, ylabel, title, ymax))]
+                        lower *= 100
+                        upper *= 100
+                        ax.fill_between(
+                            [i - 0.4, i + 0.4],
+                            [lower, lower],
+                            [upper, upper],
+                            color='black',
+                            alpha=0.25,
+                            zorder=3  # por encima de las barras
+                        )
+                    except IndexError:
+                        continue
+
+        ax.set_title(title)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(0, ymax + 5)
+        ax.set_xticks(range(len(agent_names)))
+        ax.set_xticklabels(agent_names, rotation=45, ha='right')
+
+        for bar, value in zip(bars, values):
+            height = bar.get_height()
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                height,
+                f'{value:.2f}',
+                ha='center',
+                va='bottom',
+                fontsize=9
+            )
+
+    output_path = os.path.join(results_folder_path, 'metrics_grid.png')
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
 # ------------------------------------------------------------------------------
 # Generic helper for bar charts
 # ------------------------------------------------------------------------------
@@ -40,9 +140,26 @@ def _plot_bar(
     ylabel: str,
     title: str,
     output_path: str,
-    colors = "skyblue",
+    colors = None,
     ymax = None
 ):
+    if colors == None:
+        colors = ["skyblue"] * len(agent_names)
+        for i in range(len(agent_names)):
+            rgb = [0, 0, 0.3]
+            if "plus" in agent_names[i]:
+                rgb[2] += 0.4
+            if "orig" in agent_names[i]:
+                rgb[2] += 0.3
+            if "fsp" in agent_names[i]:
+                rgb[0] += 0.7
+            if "planner" in agent_names[i]:
+                rgb[1] += 0.5
+            # if not ("plus" in agent_names[i] or "orig" in agent_names[i]):
+            #     rgb[1] += 0.017 * len(agent_names[i])
+            colors[i] = tuple(rgb)
+            
+
     plt.figure(figsize=(10, 5))
     bars = plt.bar(agent_names, values, color=colors)
     plt.title(title)
@@ -70,6 +187,33 @@ def _plot_bar(
 # ------------------------------------------------------------------------------
 # Individual plotters for each metric
 # ------------------------------------------------------------------------------
+
+def plot_objects_count_ok(data: dict, results_folder_path: str):
+    """
+    Bar chart of % of problems with correct object count by each agent.
+    """
+    metric = 'objects_count_ok'
+    agent_names, percents = [], []
+    for agent, info in data.items():
+        evals = []
+        for dom in info.get('domains', {}).values():
+            for prob in dom.get('problems', {}).values():
+                ev = prob.get('eval', {})
+                if metric in ev:
+                    evals.append(ev[metric])
+        total = len(evals)
+        pct = (sum(evals) / total * 100) if total else 0
+        agent_names.append(agent)
+        percents.append(pct)
+
+    out = os.path.join(results_folder_path, 'objects_count_ok_by_agent.png')
+    _plot_bar(
+        agent_names, percents,
+        ylabel='Correct Objects Count (%)',
+        title='Percentage of Problems with correct Objects Count by Agent',
+        output_path=out,
+        ymax=100
+    )
 
 def plot_parseable(data: dict, results_folder_path: str):
     """
@@ -377,20 +521,111 @@ def plot_parseable_by_abstraction(data: dict, results_folder_path: str):
             ymax=100
         )
 
+def plot_planning(filename: str, results_folder_path: str, confidence_intervals: dict = None):
+    """
+    Bar chart of % of correct problems or valid plans by each agent.
+    Includes confidence intervals if provided.
+
+    Args:
+        data: Diccionario con los resultados por agente.
+        results_folder_path: Ruta a la carpeta donde guardar el gráfico.
+        confidence_intervals: Diccionario con intervalos de confianza (por agente), 
+                              donde cada valor es una tupla (lower, upper) en [0, 1].
+    """
+    filepath = os.path.join(results_folder_path, filename)
+    data = load_agent_results(filepath)
+
+    agent_names, percents = [], []
+    for agent, info in data.items():
+        evals = []
+        for dom in info.get('domains', {}).values():
+            for prob in dom.get('problems', {}).values():
+                init_is_abstract = prob.get('init_is_abstract', {})
+                goal_is_abstract = prob.get('goal_is_abstract', {})
+                if init_is_abstract or goal_is_abstract:
+                    continue
+                ev = prob.get('eval', {})
+                if 'correct' in ev:
+                    evals.append(ev['correct'])
+                if 'is_valid' in ev:
+                    evals.append(ev['is_valid'])
+        total = len(evals)
+        pct = (sum(evals) / total * 100) if total else 0
+        agent_names.append(agent)
+        percents.append(pct)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Colores según nombre
+    colors = []
+    for name in agent_names:
+        rgb = [0, 0, 0.3]
+        if "plus" in name:
+            rgb[2] += 0.4
+        if "orig" in name:
+            rgb[2] += 0.3
+        if "fsp" in name:
+            rgb[0] += 0.7
+        if "planner" in name:
+            rgb[1] += 0.5
+        colors.append(tuple(rgb))
+
+    bars = ax.bar(agent_names, percents, color=colors)
+
+    # Intervalos de confianza
+    if confidence_intervals:
+        for i, agent_name in enumerate(agent_names):
+            if agent_name in confidence_intervals:
+                lower, upper = confidence_intervals[agent_name]
+                lower *= 100
+                upper *= 100
+                ax.fill_between(
+                    [i - 0.4, i + 0.4],
+                    [lower, lower],
+                    [upper, upper],
+                    color='black',
+                    alpha=0.25,
+                    zorder=3
+                )
+
+    ax.set_ylabel('Valid plans (%)')
+    ax.set_title('Percentage of valid plans by Agent in explicit tasks')
+    ax.set_ylim(0, 105)
+    ax.set_xticks(range(len(agent_names)))
+    ax.set_xticklabels(agent_names, rotation=45, ha='right')
+
+    for bar, value in zip(bars, percents):
+        height = bar.get_height()
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            height,
+            f'{value:.2f}',
+            ha='center',
+            va='bottom',
+            fontsize=9
+        )
+
+    plt.tight_layout()
+    out = os.path.join(results_folder_path, 'valid_plans_by_agent.png')
+    plt.savefig(out)
+    plt.close()
+
 
 # ------------------------------------------------------------------------------
 # Plotters
 # ------------------------------------------------------------------------------
 
 PLOTTERS = [
-    plot_parseable,
+    # plot_objects_count_ok,
+    # plot_parseable,
     # plot_parseable_by_domain,
-    plot_domain_parseable,
-    plot_domain_solvable,
-    plot_domain_correct,
-    plot_parseable_by_abstraction,
-    plot_solvable,
-    plot_correct,
-    plot_token_consumption,
-    plot_total_generation_time
+    # plot_domain_parseable,
+    # plot_domain_solvable,
+    # plot_domain_correct,
+    # plot_parseable_by_abstraction,
+    # plot_solvable,
+    # plot_correct,
+    # plot_token_consumption,
+    # plot_total_generation_time,
+    plot_planning
 ]
