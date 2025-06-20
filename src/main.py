@@ -13,7 +13,7 @@ from exp.training import gather_experiences
 from exp.insights_extraction import extract_insights
 
 from utils.io_utils import save_text, make_case_dir, create_file_if_not_exists, load_json_data, save_data_to_json
-from utils.evaluation_utils import eval_trial
+from utils.evaluation_utils import eval_trial, bootstrapping
 from utils.planning_utils import generate_plan
 from utils.result_utils import initialize_result_structures
 from utils.pddl_utils import get_pddl_substr, extract_typed_objects
@@ -22,7 +22,8 @@ from config import BASE_DIR, RESULT_ROOT, LLM_DEFAULT_MODEL, TRAINING_SUBSET, TE
 
 os.makedirs(RESULT_ROOT, exist_ok=True)
 
-experiential_agent_name = "exp_hi"
+# experiential_agent_name = "exp"
+experiential_agent_name = "exp_hi_rag"
 experiential_agent = get_modeler_agent(experiential_agent_name, LLM_DEFAULT_MODEL, LLM_DEFAULT_MODEL, LLM_DEFAULT_MODEL)
 
 def get_task_short_desc(task):
@@ -59,53 +60,6 @@ def set_fsp_example(domain, subset, id):
     # save_text(objects_path, objects)
     with open(objects_path, "w", encoding="utf-8") as f:
         json.dump(objects, f, indent=4)
-
-def old_eval_gen():
-    print("⚙️ Loading dataset subsets...")
-    try:
-        train_dataset = load_planetarium_subset(TRAINING_SUBSET)
-        test_dataset = load_planetarium_subset(TESTING_SUBSET)
-        print("  ☑️ Loaded dataset subsets")
-    except Exception as e:
-        print("❌ Failed to load dataset subsets", e)
-
-    print("⚙️ Selecting problems...")
-    selected_cases = []
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="blocksworld"][1:2]
-
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="blocksworld"][15:16]
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="gripper"][15:16]
-    # selected_cases += [ex for ex in test_dataset if ex["domain"]=="floor-tile"][15:16]
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="blocksworld"][0:1]
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="gripper"][1:2]
-    # selected_cases += [ex for ex in test_dataset if ex["domain"]=="floor-tile"][2:3]
-    # selected_cases += [ex for ex in test_dataset][:]
-    # selected_cases += [ex for ex in train_dataset][:]
-
-    blocksworld_tasks = [ex for ex in test_dataset if ex["domain"]=="blocksworld"][:]
-    gripper_tasks = [ex for ex in test_dataset if ex["domain"]=="gripper"][:]
-    floor_tile_tasks = [ex for ex in test_dataset if ex["domain"]=="floor-tile"][:]
-
-    random.seed(42)
-    # selected_cases = random.sample(selected_cases, 50)
-    selected_cases = random.sample(blocksworld_tasks, 10)+random.sample(gripper_tasks, 10)+random.sample(floor_tile_tasks, 10)
-
-    # selected_cases = [ex for ex in test_dataset if ex["id"] in [109865]]
-    
-    # [ex for ex in test_dataset if ex["id"] in [109865, 141761, 142306, 164985, 165021, 165028, 165218, 165985, 166118, 166172, 20097, 20197, 92243]]
-
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="blocksworld"][0:2]
-    # selected_cases += [ex for ex in train_dataset if ex["domain"]=="gripper"][0:2]
-    # selected_cases += [ex for ex in test_dataset if ex["domain"]=="floor-tile"][0:2]
-
-
-    cases = selected_cases
-    seen_ids = []
-    selected_cases = []
-    for case in cases:
-        if not case["id"] in seen_ids:
-            selected_cases.append(case)
-            seen_ids.append(case["id"])
 
 #######################################
 
@@ -643,7 +597,7 @@ def exp_solve_task(task, human_feedback: bool, max_trials = EXP_TESTING_TRIALS):
     
     # Store result
 
-def eval_exp(resume: bool, selected_cases, human_feedback: bool, max_trials = EXP_TESTING_TRIALS):
+def eval_exp(resume: bool, selected_cases, human_feedback: bool, past_trials, max_trials = EXP_TESTING_TRIALS):
     if not resume:
         choice = input("Are you sure you want to restart the evaluation? Any progress will be lost (y/n):")
         if choice == "n" or choice == "N":
@@ -692,6 +646,15 @@ def eval_exp(resume: bool, selected_cases, human_feedback: bool, max_trials = EX
         reflections = []
         last_resp = {}
 
+        start = 0
+        if idx in past_trials:
+            start = 1
+            last_resp = past_trials[idx]
+            last_resp = {**last_resp["eval"], "eval": last_resp["eval"]}
+            reflection = reflect(problem_nl = nl, domain = domain, past_reflections = reflections, experiential_agent_resp = last_resp, evaluation = last_resp["eval"], model = REFLECTION_LLM_MODEL) # To do: improve
+            reflections.append(reflection["reflection"])
+            experiential_agent.last_resp = last_resp
+
         print(f"\n🚀 Starting problem: {domain}_{idx}")
         print(get_task_short_desc(ex))
         print()
@@ -714,7 +677,7 @@ def eval_exp(resume: bool, selected_cases, human_feedback: bool, max_trials = EX
         print("  ☑️ Done")
 
         ################################################################
-        for trial in range(max_trials): 
+        for trial in range(start, max_trials): 
             print(f"Trial #{trial + 1}")
             print()
             experiential_agent.reflections = reflections
@@ -864,20 +827,6 @@ def trials_to_evaluation_by_agent(agent_names):
     with open(os.path.join(RESULT_ROOT, f"evaluation_by_agent_{now}.json"), "w", encoding="utf-8") as f:
         json.dump(evaluation_by_agent, f, indent=4)
 
-########### MAIN FUNCTIONS CALL ########### 
-
-# training_cases, eval_cases = get_cases()
-# run_evaluations(False, eval_cases)
-
-# insights_extraction(False)
-
-# eval_exp(True, eval_cases, False, 3)
-
-# visualize_evaluation("evaluation_by_agent_2025-06-13_18-59-57.json")
-
-# exp_gathering(False, training_cases)
-
-####################################
 
 def get_json_files(folder_path):
     """
@@ -925,27 +874,8 @@ def show_token_consumption():
     print(count)
     print(total / count)
 
-def bootstrapping(resultados):
-    # Resultados binarios de un agente para una métrica (por ejemplo, "Correct")
-    # (Supón que ya los cargaste de tu CSV o archivo)
-    resultados = np.array(resultados)
 
-    # Número de iteraciones bootstrap
-    N = 100000
-    np.random.seed(42)
-    bootstrap_vals = np.random.choice(resultados, size=(N, len(resultados)), replace=True)
-    metricas = bootstrap_vals.mean(axis=1)
-
-    # Calcular media y percentiles
-    media = resultados.mean()
-    ic_95 = np.percentile(metricas, [2.5, 97.5])
-
-    return ic_95
-    print(f"Porcentaje promedio: {media*100:.2f} %")
-    print(f"IC 95%: [{ic_95[0]*100:.2f} %, {ic_95[1]*100:.2f} %]")
-
-
-def test(agent_names):
+def test(agent_names, first_try, include_floor_tile):
     total = 0
     prompt = 0
     completion = 0
@@ -966,10 +896,14 @@ def test(agent_names):
         cac = {}
         for file in trials_files:
             trial = load_json_data(file)
+            if not include_floor_tile and trial["task"]["domain"] == "floor-tile":
+                continue
             # if trial["task"]["init_is_abstract"] or trial["task"]["goal_is_abstract"]:
             #     continue
             id = trial["task"]["id"]
             if "trial" in trial:
+                if first_try and trial["trial"] > 1:
+                    continue
                 u[id] = trial["trial"]
             else:
                 u[id] = 1
@@ -986,6 +920,8 @@ def test(agent_names):
         # print(len(trials_files))
         for file in trials_files:
             trial = load_json_data(file)
+            if not include_floor_tile and trial["task"]["domain"] == "floor-tile":
+                continue
             # if trial["task"]["init_is_abstract"] or trial["task"]["goal_is_abstract"]:
             #     continue
             id = trial["task"]["id"]
@@ -997,6 +933,8 @@ def test(agent_names):
 
             if trial_n == 1:
                 ac[id] = []
+            elif first_try:
+                continue
             
 
             ac[id].append((trial["eval"]["parseable"], trial["eval"]["solvable"], trial["eval"]["correct"]))
@@ -1359,10 +1297,26 @@ def test_planners(agent_names):
     print(prompt, completion, total, generation_time)
     return ic_95
 
+def load_failed_trials(agent):
+    trials_files = get_json_files(os.path.join(BASE_DIR, "results", agent, "trials"))
+    failed_trials = {}
+    failed_trials_ids = []
+
+    for file in trials_files:
+        trial = load_json_data(file)
+        # if trial["task"]["init_is_abstract"] or trial["task"]["goal_is_abstract"]:
+        #     continue
+        id = trial["task"]["id"]
+        if trial["eval"]["correct"]:
+            continue
+        failed_trials_ids.append(id)
+
+        failed_trials[id] = trial
+    return failed_trials, failed_trials_ids
 
 active_agents = [
-    "llm_planner", 
-    "llm_planner_fsp",
+    # "llm_planner", 
+    # "llm_planner_fsp",
  
     "orig_llm_plus_p", 
     "llm_plus_p",
@@ -1377,6 +1331,9 @@ active_agents = [
     "r_o_fsp",
     "r_o_gcd_fsp",
     "r_o_daps_gcd_fsp",
+
+    # "exp",
+    # "exp_hi_rag"
     
     # "r_fsp_hi",
     # "r_o_daps_gcd_fsp_hi"
@@ -1387,18 +1344,35 @@ planner_agents = [
     "llm_planner_fsp"
 ]
 
-# ic_95 = test(active_agents)
+########### MAIN FUNCTIONS CALL ########### 
 
-# test(active_agents)
+# training_cases, eval_cases = get_cases()
+
+# run_evaluations(False, eval_cases)
+
+# insights_extraction(False)
+
+# eval_exp(True, eval_cases, False, {}, 3)
+
+# visualize_evaluation("evaluation_by_agent_2025-06-13_18-59-57.json")
+
+# exp_gathering(False, training_cases)
+
+# ic_95 = test(active_agents, first_try = False, include_floor_tile = True)
 
 # ic_95 = test_planners(active_agents)
 
-# print(ic_95)
-
 # test_train(["exp"])
 
-# plot_all_metrics_grid("evaluation_by_agent_2025-06-13_18-59-57.json", RESULT_ROOT, ic_95)
+# failed_trials, failed_trials_ids = load_failed_trials("r_o_daps_gcd_fsp")
+
+# failed_trials_cases = [case for case in eval_cases if case["id"] in failed_trials_ids]
+
+# eval_exp(False, failed_trials_cases, False, failed_trials, 3)
 
 # trials_to_evaluation_by_agent(active_agents)
 
+
 # plot_planning("evaluation_by_agent_2025-06-13_18-59-57.json", RESULT_ROOT, ic_95)
+
+# plot_all_metrics_grid("evaluation_by_agent_2025-06-15_17-09-17.json", RESULT_ROOT, ic_95)

@@ -119,7 +119,7 @@ class ModelerAgent:
         else:
             self.objects_grammar = self.not_typed_objects_grammar
 
-        if self.use_fsp and not self.use_rag:
+        if self.use_fsp and (not self.use_rag or self.domain == "floor-tile"):
             fsp_ex_nl, fsp_ex_pddl, fsp_ex_plan, fsp_ex_objects, fsp_ex_reasoning = get_fsp_example(domain)
             fsp_ex = fsp_to_dict(fsp_ex_nl, fsp_ex_pddl, fsp_ex_plan, fsp_ex_objects, fsp_ex_reasoning)
             self.set_fsp_examples([fsp_ex])
@@ -128,7 +128,7 @@ class ModelerAgent:
         self.problem_id = id
         self.set_domain(domain)
         self.problem_nl = problem_nl
-        if self.use_rag:
+        if self.use_rag and self.domain != "floor-tile":
             similar_succ = self.retriever.get_top_similar_successes(self.problem_id, self.fsp_k)
             fsp_examples = [self.trial_to_fsp_ex(trial) for trial in similar_succ]
             self.set_fsp_examples(fsp_examples)
@@ -551,12 +551,6 @@ def get_modeler_agent(variant,
     if variant == "r_o_daps_gcd_fsp":
         return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1)
     
-    if variant == "r_fsp_hi":
-        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_fsp = True, fsp_k = 1, use_insights = True)
-    if variant == "r_o_daps_gcd_fsp_hi":
-        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1, use_insights = True)
-    
-
     # Experientials
     if variant == "exp":
         return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True)
@@ -564,24 +558,5 @@ def get_modeler_agent(variant,
         return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True, use_rag = True)
     if variant == "exp_hi":
         return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True, use_insights = True)
-    
-    # if variant == "llm_plus_p":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model)
-    # if variant == "llm_plus_p_fsp":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_fsp = True)
-    # if variant == "gcd":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_comments = True)
-    # if variant == "daps_gcd":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_daps = True, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_comments = True)
-    # if variant == "daps_gcd_r":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_daps = True, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_reasoning = True, reasoning_model = reasoning_model, use_comments = True)
-    # if variant == "daps_gcd_fsp":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_daps = True, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_fsp = True, use_comments = True)
-    # if variant == "daps_gcd_r_fsp":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_daps = True, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_reasoning = True, reasoning_model = reasoning_model, use_fsp = True, use_comments = True)
-    # if variant == "exp":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_fsp = True, use_rag = False, fsp_k = 1, use_insights = True, use_reflection = True, use_gcd = True, use_daps = True, use_comments = True)
-    # if variant == "daps_gcd_r_fsp_i":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_gcd = True, use_daps = True, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_reasoning = True, reasoning_model = reasoning_model, use_fsp = True, use_comments = True, use_insights = True)
-    # if variant == "r_fsp_i":
-    #     return ModelerAgent(pddl_generation_model = pddl_generation_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_reasoning = True, reasoning_model = reasoning_model, use_fsp = True, use_comments = True, use_insights = True)
+    if variant == "exp_hi_rag":
+        return ModelerAgent(pddl_generation_model = pddl_generation_model, use_reasoning = True, reasoning_model = reasoning_model, use_objects_extraction = True, objects_extraction_model = objects_extraction_model, use_gcd = True, use_daps = True, use_comments = True, use_fsp = True, fsp_k = 1,  use_reflection = True, use_insights = True, use_rag = True)

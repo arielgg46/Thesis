@@ -2,7 +2,7 @@ import os, re
 import planetarium
 from typing import List
 
-
+import numpy as np
 from utils.pddl_utils import extract_typed_objects, split_pddl_problem_sections
 from utils.planning_utils import generate_plan
 from utils.io_utils import save_text
@@ -210,6 +210,24 @@ def eval_trial(task: dict, modeling_agent_resp):
         "feedback": feedback
     }
 
+def bootstrapping(resultados):
+    # Resultados binarios de un agente para una métrica (por ejemplo, "Correct")
+    # (Supón que ya los cargaste de tu CSV o archivo)
+    resultados = np.array(resultados)
+
+    # Número de iteraciones bootstrap
+    N = 100000
+    np.random.seed(42)
+    bootstrap_vals = np.random.choice(resultados, size=(N, len(resultados)), replace=True)
+    metricas = bootstrap_vals.mean(axis=1)
+
+    # Calcular media y percentiles
+    media = resultados.mean()
+    ic_95 = np.percentile(metricas, [2.5, 97.5])
+
+    # print(f"Porcentaje promedio: {media*100:.2f} %")
+    # print(f"IC 95%: [{ic_95[0]*100:.2f} %, {ic_95[1]*100:.2f} %]")
+    return ic_95
 
 # pddl_gt = """(define (problem grid_to_all_different_1_6_6)
 #     (:domain floor-tile)
