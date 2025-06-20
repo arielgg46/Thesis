@@ -1,0 +1,19 @@
+root ::= define
+define ::= "(" ws "define" ws problemDecl domainDecl requireDef objectDecl init goal ")"
+
+problemDecl ::= "(" ws "problem" ws "<Nombre del problema>" ws ")" ws
+domainDecl ::= "(" ws ":domain" ws "<Nombre del dominio>" ws ")" ws
+objectDecl ::= "(" ws ":objects" ws <Objetos> ws ")" ws
+requireDef ::= "(" ws ":requirements" ws "<Requerimientos>" ws ")" ws
+init ::= "(" ws ":init" ws initEl* ")" ws
+initEl ::= literal
+goal ::= "(" ws ":goal" ws preGD ")" ws
+
+<Producción de literal>
+<Producción de fórmula atómica>
+
+preGD ::= "(and" ws GD+ ")"
+<Producción de GD>
+
+<Producciones de los objetos>
+ws ::= [ \t\n]*

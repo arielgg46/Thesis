@@ -1,0 +1,83 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{Introducción}{1}{chapter*.8}%
+\contentsline {chapter}{\numberline {1}Estado del Arte y Marco Teórico-Conceptual}{7}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Fundamentos de la Planificación Automática}{7}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}De \textit {STRIPS} a \textit {PDDL}}{7}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Estructura de \textit {PDDL} y fragmento \textit {STRIPS + :typing}}{8}{subsection.1.1.2}%
+\contentsline {section}{\numberline {1.2}Algoritmos y herramientas de planificación}{8}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}El \textit {International Planning Competition} (\textit {IPC})}{9}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}\textit {Fast Downward}}{9}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}\textit {VAL}}{9}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}\textit {LLMs} y su rol en planificación}{10}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}El paradigma \textit {LLM-as-Planner} y sus limitaciones}{10}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}El Paradigma \textit {LLM-as-Modeler}}{11}{subsection.1.3.2}%
+\contentsline {section}{\numberline {1.4}Aprendizaje Basado en Experiencia para Modelado de problemas de planificación}{13}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}\textit {ExpeL: LLM Agents Are Experiential Learners}}{13}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}\textit {Prompt-based Learning}}{13}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}\textit {Retrieval-Augmented Generation} (\textit {RAG})}{14}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Razonamiento y Auto-mejora}{15}{subsection.1.4.4}%
+\contentsline {subsection}{\numberline {1.4.5}\textit {In-Context Reinforcement Learning}}{15}{subsection.1.4.5}%
+\contentsline {section}{\numberline {1.5}Modelado gramatical y técnicas de restricción formal}{16}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}\textit {Grammar-Constrained Decoding (GCD)}}{16}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}\textit {Backus-Naur Form} (\textit {BNF})}{18}{subsection.1.5.2}%
+\contentsline {subsection}{\numberline {1.5.3}Extensión moderna: \textit {GBNF} en \texttt {llama.cpp}}{18}{subsection.1.5.3}%
+\contentsline {subsection}{\numberline {1.5.4}Aplicaciones Previas de \textit {GCD} en planificación automática}{19}{subsection.1.5.4}%
+\contentsline {section}{\numberline {1.6}El \textit {Benchmark Planetarium}}{19}{section.1.6}%
+\contentsline {section}{\numberline {1.7}Conclusiones}{21}{section.1.7}%
+\contentsline {chapter}{\numberline {2}Propuesta de Solución}{22}{chapter.2}%
+\contentsline {section}{\numberline {2.1}\textit {Baselines}}{24}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Agentes planificadores}{25}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Agentes modeladores originales}{25}{subsection.2.1.2}%
+\contentsline {section}{\numberline {2.2}Agentes modeladores propuestos}{26}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Razonamiento}{27}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Extracción de Objetos}{28}{subsection.2.2.2}%
+\contentsline {section}{\numberline {2.3}\textit {Grammar-Constrained Decoding (GCD)}}{28}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}\textit {GCD} para generación de modelos \textit {PDDL} de problema}{28}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Componentes específicos según inclusión del módulo \textit {DAPS}}{30}{subsection.2.3.2}%
+\contentsline {subsubsection}{Sin inclusión del módulo \textit {DAPS}}{30}{section*.20}%
+\contentsline {subsubsection}{Con inclusión del módulo \textit {DAPS}}{31}{section*.21}%
+\contentsline {paragraph}{Dominios no tipados}{31}{section*.22}%
+\contentsline {paragraph}{Dominios tipados}{32}{section*.23}%
+\contentsline {subsection}{\numberline {2.3.3}\textit {GCD} para extracción de objetos en dominios no tipados}{33}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}\textit {GCD} para extracción de objetos en dominios tipados}{34}{subsection.2.3.4}%
+\contentsline {section}{\numberline {2.4}Evaluación de modelos \textit {PDDL} y planes}{35}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Agente experiencial}{36}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Reflexión}{37}{subsection.2.5.1}%
+\contentsline {section}{\numberline {2.6}Entrenamiento}{38}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Fase de extracción de \textit {insights}}{41}{subsection.2.6.1}%
+\contentsline {section}{\numberline {2.7}Agente de \textit {Insights}}{42}{section.2.7}%
+\contentsline {subsubsection}{Comparación de un par de intentos de un mismo problema, uno fallido y uno exitoso}{43}{section*.26}%
+\contentsline {subsubsection}{Comparación de varias soluciones correctas de distintos problemas del mismo dominio}{44}{section*.27}%
+\contentsline {section}{\numberline {2.8}RAG}{44}{section.2.8}%
+\contentsline {chapter}{\numberline {3}Implementación de la propuesta}{45}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Estructura del proyecto}{45}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Recursos de dominio}{45}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Modelos de Lenguaje}{46}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Procesamiento y guardado de las operaciones sobre la base de \textit {Insights}}{48}{section.3.4}%
+\contentsline {section}{\numberline {3.5}RAG}{48}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}\textit {Retriever}}{48}{subsection.3.5.1}%
+\contentsline {section}{\numberline {3.6}Manipulación de modelos \textit {PDDL} de problemas}{49}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Correcciones del \textit {dataset} de \textit {Planetarium}}{49}{section.3.7}%
+\contentsline {chapter}{\numberline {4}Evaluación}{51}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Selección de subconjuntos de \textit {Planetarium}}{52}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Proceso de Evaluación de los Agentes}{53}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Fase de entrenamiento del agente experiencial}{54}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Comparación con \textit {baselines} de planificación directa}{55}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Resultados generales}{56}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Impacto del Razonamiento Estructurado}{58}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Impacto de la Extracción de Objetos}{59}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Impacto de \textit {Grammar-Constrained Decoding (GCD)} y su variante \textit {Domain-and Problem-Specific (DAPS)}}{60}{subsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.5.4}Un salto cualitativo sobre los \textit {baselines} existentes}{61}{subsection.4.5.4}%
+\contentsline {section}{\numberline {4.6}Entrenamiento del agente modelador experiencial}{62}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Aplicación de reintentos, \textit {feedback} y reflexión a la evaluación}{63}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Extracción de \textit {insights}}{64}{section.4.8}%
+\contentsline {section}{\numberline {4.9}Evaluación del agente experiencial con todos los módulos incluidos}{64}{section.4.9}%
+\contentsline {section}{\numberline {4.10}Limitaciones de la experimentación y evaluación}{65}{section.4.10}%
+\contentsline {section}{\numberline {4.11}Resumen de los resultados}{67}{section.4.11}%
+\contentsline {section}{\numberline {4.12}Análisis del cumplimiento de las hipótesis}{68}{section.4.12}%
+\contentsline {chapter}{Conclusiones}{72}{section*.36}%
+\contentsline {chapter}{Recomendaciones y Trabajo Futuro}{75}{section*.38}%
+\contentsline {chapter}{Bibliograf\'{\i }a}{77}{chapter*.40}%
+\contentsline {chapter}{Anexos}{83}{section*.41}%
+\contentsline {subsubsection}{Comparación de un par de intentos de un mismo problema, uno fallido y uno exitoso}{97}{section*.53}%
+\contentsline {subsubsection}{Comparación de varias soluciones correctas de distintos problemas del mismo dominio}{99}{section*.54}%

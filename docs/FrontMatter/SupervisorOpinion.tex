@@ -1,0 +1,37 @@
+\begin{opinion}
+Como tutor del trabajo de diploma titulado ``\texttt{PLAN-GRAIL}: mejorando la correctitud sintáctica y semántica de agentes basados en \textit{LLMs} para modelación de problemas de planificación'', realizado por Ariel González Gómez, expreso mi valoración sobre la importancia, originalidad y calidad de la investigación desarrollada.
+
+El tema abordado en esta tesis se sitúa en el centro de uno de los retos más relevantes de la inteligencia artificial contemporánea: el razonamiento de los Modelos de Lenguaje de Gran Escala (\textit{LLMs}) mediante su integración con herramientas externas. En particular, la generación automática de modelos simbólicos (\textit{PDDL}) a partir de descripciones en lenguaje natural es un problema de alto impacto, pues constituye un cuello de botella para la adopción práctica de planificadores clásicos en numerosos contextos reales. Sin embargo, la integración de \textit{LLMs} con planificadores simbólicos presenta desafíos notables, ya que los modelos tienden a ``alucinar'' características del entorno, sin comprensión del problema, lo que provoca errores sintácticos y semánticos difíciles de controlar. Por ello, la necesidad de garantizar la correctitud formal de las salidas es crítica para la confiabilidad de los sistemas híbridos simbólico-conectivistas.
+
+La tesis de Ariel representa un avance significativo sobre el estado del arte en este campo. El trabajo propone una arquitectura modular y extensible para agentes modeladores basados en \textit{LLMs}, que resuelve de manera definitiva el problema de la correctitud sintáctica en la generación de modelos \textit{PDDL}. Esto se logra mediante la integración de técnicas de \textit{Grammar-Constrained Decoding (GCD)} y la generación automática de gramáticas especializadas para cada instancia de problema, lo que asegura no solo la validez sintáctica (eliminando completamente los errores de \textit{parsing}), sino también una mejora sustancial en la correctitud semántica de las soluciones generadas—con incrementos de hasta 24.3 \% respecto a los mejores \textit{baselines} reproducidos y un desempeño de 100 \% en validez sintáctica, 87.1 \% en solubilidad y 81.4 \% en correctitud. Más aún, la integración de mecanismos de reintentos, guiados por \textit{feedback} construido automáticamente y autorreflexión de los modelos, permitió elevar estas métricas a 100\,\%, 98.57\,\% y 84.29\,\%, respectivamente. Finalmente, agregando el componente experiencial, consistente en la recuperación por \textit{RAG} de ejemplos similares de soluciones obtenidas durante el entrenamiento, así como la inclusión en el \textit{prompt} de \textit{insights} de modelación, se consiguió la solubilidad del 100\,\% de los modelos, y la correctitud del 87.14\,\%.
+
+Entre las innovaciones principales de la tesis destacan:
+
+\begin{itemize}
+\item La generación automática de gramáticas con contenido semántico específico para cada instancia de problema, restringiendo la generación a predicados, aridad y tipos válidos según el dominio y los objetos extraídos.
+
+\item La incorporación de un agente experiencial capaz de recolectar y utilizar \textit{insights} y reflexiones a partir de problemas similares, permitiendo un proceso de \textit{Transfer Learning} en un entorno socrático, sin necesidad de \textit{Fine-Tuning} ni modificación de los pesos del modelo.
+
+\item El uso combinado de razonamiento estructurado en fases, \textit{feedback} automático, aprendizaje experiencial y \textit{Retrieval-Augmented Generation (RAG)} para enriquecer el contexto y guiar la generación hacia soluciones más fieles y robustas.
+\end{itemize}
+
+Los resultados obtenidos no solo superan en un orden de magnitud la correctitud de las soluciones generadas respecto a los métodos existentes, sino que establecen un nuevo estándar de referencia en la generación automática de modelos simbólicos asistida por \textit{LLMs}. La arquitectura, los métodos y las métricas de evaluación propuestos son reproducibles y de gran valor para la comunidad, con resultados que son plenamente publicables en el primer nivel científico internacional.
+
+Cabe resaltar que todo el mérito de estos logros corresponde a Ariel González Gómez, quien trabajó con absoluta independencia durante todas las etapas del proceso investigativo: desde la revisión crítica del estado del arte, el diseño conceptual, la implementación técnica y experimental, hasta el análisis y discusión de los resultados. Ariel demostró iniciativa, rigor, creatividad y una capacidad sobresaliente para abordar problemas abiertos y proponer soluciones originales y efectivas.
+
+Por todo lo anterior, considero que esta tesis constituye una contribución destacada al avance del campo y recomiendo su aprobación con la máxima calificación. Felicito a Ariel por su desempeño académico y científico ejemplar.
+
+\vspace{0.5cm}
+
+\begin{flushright}
+	\underline{\hspace{6.5cm}}\\
+	Dr. Alejandro Piad Morfiss
+	
+	Facultad de Matemática y Computación
+	
+	Universidad de la Habana
+	
+	Junio, 2025
+\end{flushright}
+
+\end{opinion}

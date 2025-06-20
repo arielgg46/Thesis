@@ -1,0 +1,130 @@
+\chapter{Implementación de la propuesta}\label{chapter:implementation}
+
+\section{Estructura del proyecto}
+
+El sistema propuesto fue implementado en \textbf{Python 3.12}, haciendo uso extensivo de bibliotecas modernas para procesamiento de lenguaje natural, planificación automática y manejo de datos. La arquitectura del código siguió un diseño modular y extensible, con componentes claramente separados por responsabilidad: agentes modeladores y planificadores, interacción con \textit{LLMs}, evaluación de modelos, entrenamiento experiencial, y recuperación semántica con \textit{RAG}. Cada módulo contó con su propia estructura de datos y utilidades específicas, lo que facilita tanto la reproducibilidad como la incorporación de mejoras o nuevas estrategias de modelado. 
+
+Se integraron herramientas como \texttt{sentence-transformers} para \textit{embeddings} de lenguaje natural, \texttt{Fast Downward} para planificación clásica, y \texttt{VAL} para validación de planes. Las consultas a modelos de lenguaje se gestionaron mediante la \textit{API} de \textit{Fireworks AI}, y se realizó un seguimiento detallado del consumo de \textit{tokens} para evaluar la eficiencia del sistema. La base de datos del \textit{benchmark Planetarium} se almacenó en formato \textit{SQLite}, permitiendo un acceso eficiente y estructurado. 
+
+El conjunto del sistema puede ejecutarse desde un único punto de entrada (\texttt{main.py}), facilitando la ejecución de experimentos completos de principio a fin. La estructura del proyecto implementado se presenta en el Anexo correspondiente. A continuación se describen a detalle algunos de los componentes relevantes implementados.
+
+\section{Recursos de dominio}
+
+Para cada uno de los dominios considerados en este trabajo, se construyó un conjunto de recursos que permitió automatizar y estandarizar los procesos de razonamiento, extracción y generación. Estos recursos fueron esenciales tanto para la etapa de entrenamiento y ajuste de los agentes modeladores, como para su evaluación. Los elementos incluidos en esta base de recursos fueron:
+
+\begin{itemize}
+    \item Un problema de ejemplo del dominio, utilizado para \textit{FSP}. Este consiste en:
+    \begin{itemize}
+        \item Una descripción en lenguaje natural del problema (\texttt{fsp\_ex\_nl.txt}).
+        \item Un razonamiento estructurado sobre la modelación del problema (objetos, estado inicial, estado objetivo) (\texttt{fsp\_ex\_reasoning.txt}).
+        \item El conjunto estructurado de objetos relevantes extraídos del problema, tipados si el dominio lo requiere (\texttt{fsp\_ex\_objects.json}).
+        \item El modelo \textit{PDDL} del problema (\texttt{fsp\_ex\_pddl.pddl}).
+        \item Un plan que resuelve el problema, en formato \textit{PDDL plan}, una secuencia de acciones concretas del dominio (\texttt{fsp\_ex\_plan.pddl}).
+    \end{itemize}
+    \item Una descripción corta del dominio en lenguaje natural (\texttt{domain\_description.txt}).
+    \item Una descripción en lenguaje natural de las acciones disponibles en el dominio, incluyendo su nombre, parámetros, precondiciones y efectos (\texttt{actions\_description.txt}).
+    \item La descripción de la sintaxis esperada de la salida del planificador, es decir, el formato del plan esperado (\texttt{planner\_output\_syntax.txt}).
+    \item El modelo \textit{PDDL} del dominio completo (\texttt{domain.pddl}).
+    \item La lista de predicados definidos en el dominio, junto con su aridad. En el caso de dominios tipados, también se indicaron los tipos de cada uno de los argumentos.
+    \item La jerarquía de tipos del dominio, en caso de que este cuente con tipado.
+\end{itemize}
+
+Para facilitar el acceso y reutilización de esta información en diferentes componentes del sistema, se implementaron métodos utilitarios simples en \textit{Python} que permitieron importar y consultar dinámicamente estos recursos a partir del nombre del dominio. Esto permitió no solo una mayor modularidad en el diseño del agente modelador, sino también una integración directa con los módulos de razonamiento, extracción y validación semántica.
+
+\section{Modelos de Lenguaje}
+
+Todos los agentes modeladores desarrollados en este trabajo utilizan \textit{LLMs} a través de la interfaz de programación de aplicaciones (\textit{API}) provista por la plataforma \textit{Fireworks AI}. Esta plataforma permite acceder de manera flexible y configurable a modelos de última generación, incluyendo diversas funcionalidades clave que se detallan a continuación:
+
+\begin{itemize}
+    \item \textbf{Selección de modelos:} La \textit{API} ofrece acceso a distintos modelos del estado del arte. Para este trabajo se utilizó el modelo \textbf{Llama 4 Maverick Instruct (Basic)} \parencite{fireworks2025llama4maverick}. Esta decisión se debe a la buena relación entre su alta capacidad y su costo relativamente bajo en comparación con otras alternativas de similar potencia.
+    
+    \item \textbf{Construcción del \textit{prompt}:} Se emplea el esquema de diálogo estructurado típico en los \textit{LLMs} modernos, donde se definen dos roles: \textit{system} y \textit{user}. El \textit{system prompt} se utiliza para establecer el comportamiento general del modelo, mientras que el \textit{user prompt} contiene la tarea específica a ejecutar. Esta separación permitió modularidad y claridad en las interacciones, facilitando la adaptación del agente a diferentes subtareas de modelado. En el Anexo, sin embargo, se presentan los \textit{prompts} sin separación de roles para facilitar la lectura.
+
+    \item \textbf{Parámetro de temperatura:} La temperatura es un parámetro que controla la aleatoriedad de la salida del modelo. Valores cercanos a 0 hacen que el modelo tienda a elegir las salidas más probables (mayor determinismo), mientras que valores mayores introducen más variabilidad y creatividad. En todos los experimentos de este trabajo se fijó la temperatura en 0, con el objetivo de aumentar la garantía de resultados deterministas y reproducibles\footnote{Aunque en teoría \emph{temperatura} $= 0$ corresponde a una decodificación puramente \emph{greedy} (seleccionando siempre el \emph{token} de mayor probabilidad), en la práctica los modelos de \emph{LLM} utilizados vía \emph{APIs} (como \emph{Fireworks AI}) pueden seguir produciendo salidas distintas en ejecuciones repetidas. Esto se debe a varios factores: (1) cálculos de punto flotante en \emph{hardware} paralelo (\emph{GPUs}) no asociativos, cuyos errores de redondeo pueden alterar la elección del \emph{token} más probable; (2) arquitecturas de mezcla de expertos (\emph{Mixture of Experts} - \emph{MoE}), donde la asignación de \emph{expertos} puede variar según el estado del sistema y el \emph{batching}; (3) implementaciones reales de \emph{softmax}, \emph{top-k} y \emph{top-p} que incluyen operaciones no deterministas o empatan \emph{logits} y eligen arbitrariamente entre ellos \parencite{weinmeister2024zero, pamelatoman2023nondeterminism}. Por ello, fijar la temperatura a cero reduce la aleatoriedad, pero \emph{no asegura} salidas idénticas. Para una \emph{reproducibilidad} real, es necesario considerar entornos controlados localmente (mismo \emph{hardware}, ejecución secuencial, semillas fijas) o emplear múltiples ejecuciones para estimar la variabilidad.}. Esta decisión fue especialmente importante dado que las tareas implicaban la generación de código o estructuras altamente sensibles a errores sintácticos o semánticos, donde la consistencia era prioritaria.
+
+
+    \item \textbf{Activación del modo \textit{Grammar}:} La \textit{API} permite activar un modo de salida restringido por gramática, denominado \textit{Grammar Mode}, basado en la integración con \textit{llama.cpp}. Esta fue la funcionalidad determinante para el uso de esta plataforma, al facilitar la ejecución del enfoque de \textit{GCD}, permitiendo de forma nativa restringir la salida del modelo a una gramática \textit{GBNF}.
+
+\end{itemize}
+
+Con el objetivo de documentar rigurosamente los experimentos realizados y facilitar su análisis posterior (incluyendo auditoría, depuración y replicación), cada consulta a los \textit{LLMs} fue registrada en un archivo individual en formato \textit{JSON}. Cada uno de estos archivos contiene:
+
+\begin{itemize}
+    \item El contenido completo del \textit{system prompt} y el \textit{user prompt}.
+    \item La identificación del \textit{LLM} utilizado (mediante la \textit{URL} provista por \textit{Fireworks AI}).
+    \item La gramática utilizada, en caso de haber estado activo el módulo de \textit{GCD}.
+    \item La fecha y hora del registro.
+    \item El tiempo total de respuesta del modelo.
+    \item El contenido generado como respuesta por el modelo.
+    \item La cantidad total de \textit{tokens} consumidos, discriminando entre los usados en el \textit{prompt} y los usados en el \textit{completado}.
+\end{itemize}
+
+Dado que todas las interacciones con los modelos se realizaron a través de una \textit{API} remota, se consideraron distintos mecanismos de recuperación ante posibles fallos, como desconexiones, errores de red, o restricciones por límite de \textit{tokens}. Para ello se mantuvo un conjunto de claves de autenticación (\textit{API Keys}) válidas de \textit{Fireworks AI}, y ante cualquier fallo se definió una política de reintentos: se reintenta la consulta hasta un máximo de tres veces por cada clave antes de pasar a la siguiente, repitiendo el proceso hasta que la petición sea exitosa o se agoten todas las claves disponibles.
+
+Este sistema robusto de consulta y registro fue fundamental para asegurar la trazabilidad completa de las decisiones tomadas por los agentes modeladores en cada instancia de generación.
+
+\section{Procesamiento y guardado de las operaciones sobre la base de \textit{Insights}}
+
+La respuesta del agente de \textit{insights} consiste en una lista de operaciones en el formato estructurado definido por el \textit{prompt}. Para su procesamiento, se implementó una función de análisis léxico y sintáctico que realiza un \textit{parsing} de la salida textual, para extraer las operaciones individuales y sus componentes (tipo, índice, contenido).
+
+Dicha función valida cada operación en cuanto a su estructura y semántica, descartando aquellas malformadas o inválidas según las reglas impuestas. Posteriormente, se aplican las operaciones válidas al conjunto correspondiente de \textit{insights}, actualizando su contenido y relevancia de acuerdo con las instrucciones proporcionadas por el agente.
+
+Además, en cada paso del proceso se almacena información detallada que incluye: (1) la respuesta textual del agente, (2) las operaciones extraídas tras el \textit{parsing}, y (3) las operaciones válidas efectivamente aplicadas. Esta información es registrada para permitir trazabilidad, análisis posterior, revisión manual y depuración durante la experimentación.
+
+\section{RAG}
+
+Los \textit{embeddings} fueron generados con el modelo \textit{all-mpnet-base-v2}, una red de \textit{transformers} disponible en la biblioteca \textit{sentence-transformers} de \textit{Hugging Face} \parencite{sentence_transformers_allmpnet}. Aunque este modelo puede ejecutarse localmente, hacerlo de forma reiterada por cada nueva consulta implicaría un elevado costo computacional, tanto en tiempo como en recursos. Asimismo, utilizar la \textit{API} oficial de \textit{Hugging Face} implicaría incurrir en costos económicos asociados al uso de \textit{tokens}.
+
+Como alternativa eficiente, se optó por precalcular los \textit{embeddings} correspondientes a los subconjuntos seleccionados del \textit{dataset Planetarium} —tanto de entrenamiento como de evaluación— utilizando un entorno de ejecución en \textit{Google Colab}, aprovechando su capacidad de cómputo. Los \textit{embeddings} generados fueron almacenados en un archivo con formato \texttt{.npz} (archivo comprimido de múltiples arreglos \textit{NumPy}), lo cual permitió descargarlos y reutilizarlos localmente sin necesidad de recálculo o gasto adicional de \textit{tokens}.
+
+Adicionalmente, se desarrolló una implementación para cálculo local de \textit{embeddings} mediante la \textit{API} oficial, orientada a pruebas puntuales o procesamiento de nuevos problemas no contenidos en el conjunto precalculado.
+
+\subsection{\textit{Retriever}}
+
+Se implementó una clase denominada \textit{Retriever}, encargada de realizar la recuperación eficiente de ejemplos relevantes de \textit{FSP} desde el conjunto de soluciones exitosas. Esta clase carga los \textit{embeddings} precalculados de los problemas almacenados en el \textit{Experience Pool}, así como el \textit{embedding} del nuevo problema planteado.
+
+Formalmente, sea $E = \{e_1, e_2, \ldots, e_n\}$ el conjunto de \textit{embeddings} vectoriales correspondientes a las descripciones de los $n$ problemas resueltos exitosamente, y sea $e_{\text{query}}$ el \textit{embedding} del nuevo problema. La clase \texttt{Retriever} calcula la similitud del coseno entre $e_{\text{query}}$ y cada $e_i$ del conjunto $E$, definida como:
+
+\[
+\text{sim}(e_{\text{query}}, e_i) = \frac{e_{\text{query}} \cdot e_i}{\|e_{\text{query}}\| \, \|e_i\|}
+\]
+
+A continuación, selecciona los $k$ vectores $e_i$ con mayor valor de similitud, y retorna las correspondientes soluciones correctas asociadas como ejemplos de \textit{FSP}. Esta operación garantiza que el contexto proporcionado al agente modelador en la etapa de evaluación esté compuesto por ejemplos relevantes, semánticamente cercanos al problema actual.
+
+\section{Manipulación de modelos \textit{PDDL} de problemas}
+
+Para implementar las evaluaciones parciales propuestas en el capítulo anterior se desarrollaron diversas funciones utilitarias, con base en la función \texttt{planetarium.evaluate} que brinda la biblioteca de \textit{Python} del \textit{benchmark}:
+
+\begin{itemize}
+
+    \item \texttt{get\_pddl\_substr}: localiza el \textit{substring} correspondiente al modelo \textit{PDDL} dentro de un modelo. Para ello, se busca el primer paréntesis abierto desde el inicio del texto, y a partir de ese punto se recorre la cadena hasta encontrar una secuencia válida de paréntesis balanceados, la cual es retornada inmediatamente. Este algoritmo, aunque sencillo, demostró ser eficaz para delimitar la sección relevante de modelo en la práctica, dado que los modelos \textit{PDDL} son estructurados con paréntesis anidados correctamente.
+
+    \item \texttt{extract\_typed\_objects}: extrae los objetos y sus tipos desde la sección \texttt{:objects} de un modelo de problema \textit{PDDL}. En caso de que algún objeto no tenga declarado explícitamente un tipo, se asume que pertenece al tipo primordial \texttt{object}. La función retorna una lista agrupada adecuadamente, incluso si los objetos de un mismo tipo están declarados de forma no contigua.
+
+    \item \texttt{split\_pddl\_problem\_sections}: divide un modelo \textit{PDDL} sintácticamente válido en cinco secciones: un prefijo, los predicados del estado inicial, una sección intermedia, los predicados del estado objetivo, y un sufijo. El prefijo comprende todo hasta la primera aparición de la subcadena \texttt{:init}, que marca el inicio de los predicados del estado inicial. La sección intermedia abarca desde el cierre de \texttt{:init} hasta el comienzo de la sección del estado objetivo, incluyendo la cadena \texttt{:goal} y, en algunos casos, \texttt{and(}. El sufijo comienza justo después de terminar los predicados del estado objetivo. Esta división facilitó el análisis independiente de cada sección del problema para la evaluación parcial.
+
+\end{itemize}
+
+\section{Correcciones del \textit{dataset} de \textit{Planetarium}}
+
+Durante la etapa de pruebas previas a la ejecución de los experimentos, se identificaron diversos errores en las descripciones generadas de los problemas incluidos en el \textit{dataset Planetarium}. Algunos de estos errores se debieron al hecho de que la versión publicada en la plataforma \textit{Hugging Face}, enlazada desde el repositorio oficial del proyecto, no se encontraba actualizada. Dicha versión aún no incluía los cambios realizados en el último \textit{commit} del repositorio, en el cual los autores corregían ciertos errores en la generación de las instancias.
+
+Para subsanar esto, se procedió a clonar el repositorio oficial, instalar sus dependencias, y ejecutar los pasos descritos en la documentación técnica con el objetivo de reproducir localmente el \textit{dataset} actualizado. A pesar de esto, se observó que algunos errores persistían incluso en la versión más reciente disponible, lo que indicaba que dichos problemas no habían sido identificados ni resueltos en los cambios previos.
+
+Tras un análisis detallado del código fuente encargado de la generación de las descripciones, se determinaron las causas exactas de varios errores. A continuación, se presentan los errores detectados, junto con las correcciones propuestas. Se recomienda a los autores del artículo \textit{Planetarium} y de su implementación oficial considerar la inclusión de estos ajustes en futuras versiones del proyecto.
+
+En el dominio \textit{Blocksworld}, se corrigieron errores relacionados con la función \texttt{abstract\_description} de la clase \texttt{BlocksworldDatasetGenerator}. Entre estos, la función \texttt{equal\_towers} reportaba incorrectamente la cantidad de torres, debido a un mal uso de la función \texttt{len()}. Además, la descripción para la tarea \texttt{invert} contenía una redacción confusa que dificultaba la comprensión de la meta.
+
+En \textit{Gripper}, los problemas se encontraron principalmente en las funciones \texttt{drop\_and\_pickup}, \texttt{holding} y \texttt{abstract\_description}. El generador no garantizaba la existencia de una sala vacía diferente a la inicial ni que al menos un \textit{gripper} sostuviera una pelota, además de no restringir la ubicación de las pelotas a la primera sala. También se mejoró la descripción de la tarea \texttt{juggle}, aclarando la dirección del movimiento de las pelotas y la asignación inicial a los \textit{grippers}.
+
+Finalmente, en \textit{Floor-Tile}, se hicieron correcciones a la generación del tablero y la descripción de las tareas. La función encargada del predicado \texttt{checkerboard} fue modificada para evitar desalineaciones en los colores del tablero. En la función \texttt{abstract\_description.get\_robot\_ring\_string}, se corrigieron errores de lógica y redacción relacionados con la ubicación inicial del robot en anillos concéntricos. Además, la descripción abstracta de la tarea \texttt{paint\_x} fue mejorada para especificar con mayor precisión los objetivos visuales, especialmente en relación al número de colores requeridos.
+
+En el Anexo se comparte la implementación y descripción detallada de los cambios realizados.
+
+% más resumido
+
+% Las correcciones abordan principalmente problemas de redacción, lógica y validación en la generación de descripciones para los dominios \textit{Blocksworld}, \textit{Gripper} y \textit{Floor-Tile}. En \textit{Blocksworld}, se corrigieron errores en el conteo de torres y en la claridad de las metas descritas, mejorando la comprensión del problema.
+
+% En el dominio \textit{Gripper}, se ajustaron las condiciones lógicas para asegurar configuraciones válidas, incluyendo la garantía de salas vacías, la correcta asignación y ubicación de pelotas, y una descripción más clara de las metas para cada subtarea.
+
+% Por último, en \textit{Floor-Tile}, se corrigieron errores en la construcción del tablero, en la descripción de la posición inicial del robot, y en la precisión de las metas visuales para tareas de pintura. Los detalles técnicos y la implementación de estas correcciones se documentan extensamente en el Anexo.

@@ -1,0 +1,908 @@
+\begin{anexes}
+
+\section*{Agentes planificadores}
+
+El esquema general del \textit{prompt} empleado para estos agentes fue el siguiente:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} genérico del agente planificador, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning AI Agent.} You are given the description of a planning domain and the available actions, and the natural language descriptions of problems in this domain, and for each you provide an optimal plan to solve the problem.\\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>}\\
+
+\textit{<Descripción de las acciones disponibles en el dominio>}\\
+
+\textbf{Task:} \\
+You will be given natural language descriptions of planning problems in this domain. \\
+Provide an optimal plan, in the way of a sequence of actions, to solve the problem.\\
+
+\textit{<Descripción y sintaxis de la salida>}\\
+
+\textit{<Ejemplos de FSP>}\\
+
+\textbf{New problem:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textbf{Plan:}
+\end{tcolorbox}
+
+A continuación se describen los componentes dinámicos del \textit{prompt} utilizado por los agentes planificadores, cuya inclusión depende del dominio, del problema específico y de la activación del módulo \textit{FSP}.
+
+\begin{itemize}
+    \item \textit{<Nombre del dominio>}, \textit{<Descripción corta del dominio en lenguaje natural>}, \textit{<Descripción de las acciones disponibles en el dominio>} y \textit{<Descripción y sintaxis de la salida>} son extraídos automáticamente de una base estructurada de recursos por dominio, construida a partir del conocimiento experto proporcionado por un humano. Esta base se encuentra documentada en el Anexo correspondiente.
+
+    \item \textit{<Descripción del problema en lenguaje natural>} corresponde a la entrada específica del problema a resolver, tal como aparece en el conjunto de datos del \textit{benchmark Planetarium}.
+
+    \item La sección \textit{<Ejemplos de FSP>} se incluye condicionalmente, en función de si el módulo \textit{FSP} se encuentra activado. En caso afirmativo, se incorpora un ejemplo representativo del dominio, seleccionado desde la misma base de recursos y estructurado bajo el siguiente formato:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Ejemplo incluido con \textit{FSP}, fonttitle=\bfseries, breakable]
+\textbf{Example \#1:} \\
+\textbf{Problem:} \\
+\textit{<Descripción del problema de ejemplo en lenguaje natural>} \\
+
+\textbf{Plan:} \\
+\textit{<Plan que resuelve el problema de ejemplo>}
+\end{tcolorbox}
+
+    Los componentes \textit{<Descripción del problema de ejemplo en lenguaje natural>} y \textit{<Plan que resuelve el problema de ejemplo>} provienen directamente del recurso \textit{FSP} proporcionado por el experto humano para el dominio correspondiente.
+\end{itemize}
+
+\section*{Agentes modeladores originales}
+
+El \textit{prompt} empleado por estos agentes depende de la activación o no del módulo \textit{FSP}. A continuación se detallan ambas variantes.
+
+\subsection*{Sin \textit{FSP}}
+
+Cuando el módulo \textit{FSP} no está activado, el agente recibe como contexto una descripción en lenguaje natural del dominio y de las acciones disponibles, seguida por la descripción del problema a resolver. El \textit{prompt} adoptado es el siguiente:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente modelador sin \textit{FSP}, fonttitle=\bfseries, breakable]
+\textit{<Descripción del dominio y las acciones>} \\
+
+Now consider a planning problem. The problem description is: \\
+\textit{<Descripción del problema en lenguaje natural>} \\
+
+Provide me with the problem PDDL file that describes the planning problem directly without further explanations?
+\end{tcolorbox}
+
+La sección \textit{<Descripción del dominio y las acciones>} es provista por el experto humano y se extrae de la base estructurada de recursos por dominio. La sección \textit{<Descripción del problema en lenguaje natural>} corresponde a la entrada específica del problema, obtenida directamente del \textit{dataset Planetarium}.
+
+\subsection*{Con \textit{FSP}}
+
+En el caso en que el módulo \textit{FSP} esté activado, el agente recibe como contexto un ejemplo completo, consistente en una descripción de un problema representativo y un modelo \textit{PDDL} correspondiente. A continuación, se presenta el nuevo problema a resolver. El \textit{prompt} en esta modalidad tiene la siguiente estructura:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente modelador con \textit{FSP}, fonttitle=\bfseries, breakable]
+I want you to solve planning problems. An example planning problem is: \\
+\textit{<Descripción del problema de ejemplo en lenguaje natural>} \\
+
+The problem PDDL file to this problem is: \\
+\textit{<Modelo PDDL del problema de ejemplo>} \\
+
+Now I have a new planning problem and its description is: \\
+\textit{<Descripción del problema en lenguaje natural>} \\
+
+Provide me with the problem PDDL file that describes the planning problem directly without further explanations?
+\end{tcolorbox}
+
+Tanto la \textit{<Descripción del problema de ejemplo en lenguaje natural>} como el \textit{<Modelo PDDL del problema de ejemplo>} provienen del recurso \textit{FSP} elaborado por el experto humano para el dominio correspondiente. Este ejemplo fue adaptado a partir de las versiones originales presentadas en \textit{LLM+P}, reformuladas para ajustarse a las variantes de dominio del \textit{benchmark Planetarium}.
+
+
+\section*{Algoritmos de los agentes modeladores propuestos}
+
+Se presentan los algoritmos que participan en el uso de los agentes modeladores propuestos:
+
+\begin{algorithm}[H]
+\caption{\(\mathcal{A}_{\text{mod}}\) -- Instanciación del agente modelador con módulos activos}
+\label{alg:instanciacion-agente}
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+
+\Input{Conjunto de módulos activos \(\mathcal{A}_{\mathrm{mod}}.M \subseteq \{ \mathrm{raz},\ \mathrm{obj},\ \mathrm{fsp},\ \mathrm{rag},\ \mathrm{com},\ \mathrm{ins},\ \mathrm{ref},\ \mathrm{gcd},\ \mathrm{daps} \}\)}
+\Output{Agente instanciado \(\mathcal{A}_{\mathrm{mod}}\)}
+
+Inicializar modelo de generación de problemas en PDDL: \(LLM_{\mathrm{genPDDL}}\)\;
+\If{\(\mathrm{obj} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Cargar gramática no tipada: \(\mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}}^{\mathrm{no\text{-}tipada}}\)\;
+}
+\If{\(\mathrm{com} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Definir directriz de comentarios: \(\mathcal{A}_{\mathrm{mod}}.\kappa \leftarrow \text{``comentarios breves en \texttt{:init} y \texttt{:goal} ...''}\)\;
+}
+\Else{
+    \(\mathcal{A}_{\mathrm{mod}}.\kappa \leftarrow \text{``''}\)\;
+}
+\If{\(\mathrm{ins} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Cargar conjunto de insights: \(\mathcal{A}_{\mathrm{mod}}.\iota \leftarrow \texttt{load\_insights()}\)\;
+}
+\Else{
+    \(\mathcal{A}_{\mathrm{mod}}.\iota \leftarrow \emptyset\)\;
+}
+Inicializar conjunto de ejemplos FSP: \(\mathcal{A}_{\mathrm{mod}}.\phi \leftarrow \emptyset\)\;
+Inicializar lista de intentos anteriores con \textit{feedback} y reflexión: \(\mathcal{A}_{\mathrm{mod}}.\tau \leftarrow \emptyset\)\;
+Inicializar recuperador de ejemplos: \(\mathcal{A}_{\mathrm{mod}}.\mathcal{R}\)\;
+
+\Return \(\mathcal{A}_{\mathrm{mod}}\)\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{\(\mathcal{A}_{\text{mod}}\) -- Asignación de tarea}
+\label{alg:asignacion-tarea}
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+
+\Input{Identificador de problema \(P_{\mathrm{id}}\), dominio \(D_{\mathrm{nombre}}\), descripción en lenguaje natural \(P_{\mathrm{desc}}\)}
+\Output{Agente \(\mathcal{A}_{\mathrm{mod}}\) actualizado con contexto de tarea}
+
+\If{\(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{nombre}} \neq D_{\mathrm{nombre}}\)}{
+    Cargar descripción del dominio: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{desc}}  \leftarrow \texttt{get\_domain\_description}(D_{\mathrm{nombre}})\)\;
+    Cargar \textit{PDDL} completo del dominio: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{PDDL}} \leftarrow \texttt{get\_domain\_pddl}(D_{\mathrm{nombre}})\)\;
+    \If{\(D_{\mathrm{nombre}} = \texttt{``floor-tile''}\)}{
+        Cargar \textit{PDDL} sin acciones: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{PDDL}}^{-} \leftarrow \texttt{get\_domain\_pddl\_without\_actions}(D_{\mathrm{nombre}})\)\;
+    }
+    Cargar predicados del dominio: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{predicados}} \leftarrow \texttt{get\_domain\_predicates}(D_{\mathrm{nombre}})\)\;
+    Cargar requisitos del dominio: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{req}} \leftarrow \texttt{get\_domain\_requirements}(D_{\mathrm{nombre}})\)\;
+    Cargar tipos del dominio: \(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{tipos}} \leftarrow \texttt{get\_domain\_types}(D_{\mathrm{nombre}})\)\;
+    \If{\(\mathrm{obj} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+        \If{\(\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{tipos}} \neq \emptyset\)}{
+            Cargar gramática tipada: \(\mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}} \leftarrow \mathcal{G}_{\mathrm{extObj}}^{\mathrm{tipada}}(D_{\mathrm{tipos}})\)\;
+        }
+        \Else{
+            Usar gramática no tipada: \(\mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}} \leftarrow \mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}}^{\mathrm{no\text{-}tipada}}\)\;
+        }
+    }
+    %\Else{
+    %    \(\mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}} \leftarrow \emptyset\)\;
+    %}
+    \If{\(\mathrm{fsp} \in \mathcal{A}_{\mathrm{mod}}.M\) \textbf{y} \(\mathrm{rag} \notin \mathcal{A}_{\mathrm{mod}}.M\)}{
+        Cargar ejemplo manual FSP: \(\mathcal{A}_{\mathrm{mod}}.\phi \leftarrow \texttt{get\_fsp\_example}(D_{\mathrm{nombre}})\)\;
+    }
+}
+
+Asignar identificador del problema: \(\mathcal{A}_{\mathrm{mod}}.P_{\mathrm{id}} \leftarrow P_{\mathrm{id}}\)\;
+Asignar descripción del problema: \(\mathcal{A}_{\mathrm{mod}}.P_{\mathrm{desc}} \leftarrow P_{\mathrm{desc}}\)\;
+
+\If{\(\mathrm{rag} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Recuperar ejemplos FSP relevantes: \(\mathcal{A}_{\mathrm{mod}}.\phi \leftarrow \mathcal{A}_{\mathrm{mod}}.\mathcal{R}.\texttt{get\_top\_similar}(P_{\mathrm{id}},\ k)\)\;
+}
+\end{algorithm}
+
+Estos algoritmos, concebidos como métodos del agente, permiten su instanciación con el enfoque modular propuesto, y la asignación del problema de planificación a modelar. La instanciación requiere la selección de las mejoras modulares a aplicar, y carga los recursos que podría necesitar el agente, de forma preventiva. Un proceso similar hace la asignación del problema, que completa toda la información requerida, al incluir la descripción en lenguaje natural del problema y el dominio de planificación en el que se desarrolla. Finalmente, con la información cargada, se puede proceder a la modelación del problema:
+
+\begin{algorithm}[H]
+\caption{\(\mathcal{A}_{\text{mod}}\) -- Modelación del problema}
+\label{alg:resolucion-problema}
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+
+\Input{Tarea ya asignada al agente \(\mathcal{A}_{\mathrm{mod}}\)}
+\Output{Modelo \textit{PDDL} del problema \(P_{\pi}\)}
+
+\If{\(\mathrm{raz} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Construir prompts para Razonamiento: \(\Pi_{\mathrm{raz\_sist}},\ \Pi_{\mathrm{raz\_usr}}\)\;
+    Obtener razonamiento: \(\mathcal{A}_{\mathrm{mod}}.\rho \leftarrow LLM_{\mathrm{raz}}(\Pi_{\mathrm{raz\_sist}},\ \Pi_{\mathrm{raz\_usr}})\)\;
+}
+\If{\(\mathrm{obj} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    Construir prompts para Extracción de objetos: \(\Pi_{\mathrm{extObj\_sist}},\ \Pi_{\mathrm{extObj\_usr}}\)\;
+    Obtener objetos: \(\mathcal{A}_{\mathrm{mod}}.\omega \leftarrow LLM_{\mathrm{extObj}}(\Pi_{\mathrm{extObj\_sist}},\ \Pi_{\mathrm{extObj\_usr}},\ \mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{extObj}})\)\;
+}
+\If{\(\mathrm{ref} \in \mathcal{A}_{\mathrm{mod}}.M\) \textbf{y} \(\mathcal{A}_{\mathrm{mod}}.\tau \neq \emptyset\)}{
+	Recuperar intento previo con \textit{feedback} y reflexión: \(\tau \leftarrow \mathcal{A}_{\mathrm{mod}}.\tau[-1]\)\;
+}
+\Else{
+	 \(\tau \leftarrow \emptyset\)\;
+}
+
+\If{\(\mathrm{gcd} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+    \If{\(\mathrm{daps} \in \mathcal{A}_{\mathrm{mod}}.M\)}{
+        Construir gramática \(\mathcal{G}_{\mathrm{genPDDL}} \leftarrow \mathcal{G}_{\mathrm{genPDDL\_DAPS}}(\mathcal{A}_{\mathrm{mod}}.\omega,\ \mathcal{A}_{\mathrm{mod}}.D_{\mathrm{predicados}},\ \mathcal{A}_{\mathrm{mod}}.D_{\mathrm{tipos}},\ \mathcal{A}_{\mathrm{mod}}.\kappa)\)\;
+    }
+    \Else{
+        Construir gramática \(\mathcal{G}_{\mathrm{genPDDL}} \leftarrow \mathcal{G}_{\mathrm{genPDDL\_general}}(\mathcal{A}_{\mathrm{mod}}.\kappa)\)\;
+    }
+}
+\Else{
+    \(\mathcal{G}_{\mathrm{genPDDL}} \leftarrow \emptyset\)\;
+}
+
+Construir prompt del sistema para Generación de \textit{PDDL}:\;
+
+\(\Pi_{\mathrm{genPDDL\_sist}}^{\mathrm{req}} \leftarrow \{\mathcal{A}_{\mathrm{mod}}.D_{\mathrm{nombre}},\ \mathcal{A}_{\mathrm{mod}}.D_{\mathrm{desc}},\ \mathcal{A}_{\mathrm{mod}}.D_{\mathrm{PDDL}},\ \mathcal{A}_{\mathrm{mod}}.D_{\mathrm{req}}\}\)\;
+
+\(\Pi_{\mathrm{genPDDL\_sist}}^{\mathrm{opt}} \leftarrow \{\mathcal{A}_{\mathrm{mod}}.\kappa,\ \mathcal{A}_{\mathrm{mod}}.\phi,\ \mathcal{A}_{\mathrm{mod}}.\iota\}\)\;
+
+\(\Pi_{\mathrm{genPDDL\_sist}} \leftarrow \Pi_{\mathrm{genPDDL\_sist}}^{\mathrm{req}} \cup \Pi_{\mathrm{genPDDL\_sist}}^{\mathrm{opt}}\)\;
+
+Construir prompt del usuario para Generación de \textit{PDDL}:\;
+
+\(\Pi_{\mathrm{genPDDL\_usr}}^{\mathrm{req}} \leftarrow \{\mathcal{A}_{\mathrm{mod}}.P_{\mathrm{desc}}\}\)\;
+
+\(\Pi_{\mathrm{genPDDL\_usr}}^{\mathrm{opt}} \leftarrow \{\mathcal{A}_{\mathrm{mod}}.\tau,\ \mathcal{A}_{\mathrm{mod}}.\rho,\ \mathcal{A}_{\mathrm{mod}}.\omega\}\)\;
+
+\(\Pi_{\mathrm{genPDDL\_usr}} \leftarrow \Pi_{\mathrm{genPDDL\_usr}}^{\mathrm{req}} \cup \Pi_{\mathrm{genPDDL\_usr}}^{\mathrm{opt}}\)\;
+
+Llamar al modelo: 
+\(\mathcal{P}_{\pi} \leftarrow LLM_{\mathrm{genPDDL}}(\Pi_{\mathrm{genPDDL\_sist}},\ \Pi_{\mathrm{genPDDL\_usr}},\ \mathcal{A}_{\mathrm{mod}}.\mathcal{G}_{\mathrm{genPDDL}})\)\;
+
+\Return \(\mathcal{P}_{\pi}\)\;
+\end{algorithm}
+
+\section*{Generación de \textit{PDDL}}
+
+Con el objetivo de garantizar la modularidad de los métodos implementados y permitir una comparación estandarizada entre las diferentes configuraciones del agente modelador, se adoptó una estructura común de \textit{prompt}. A esta base se le añaden de forma condicional, diferentes fragmentos que corresponden a módulos específicos activados en cada variante del agente.
+
+El \textit{prompt} del agente modelador propuesto se estructuró de la siguiente manera:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} base del agente modelador propuesto, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning Modeler AI Agent specialized in PDDL generation.} You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide the PDDL code of the problem. \\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>} \\
+
+\textbf{Domain PDDL:} \\
+\textit{<Modelo PDDL del dominio>} \\
+
+\textbf{Task:} \\
+You will be given natural language descriptions of planning problems in this domain. \\
+Provide the PDDL code (that conforms to the grammar of the \textit{<Requerimientos del subconjunto de PDDL>} subset of PDDL) of this problem, without further explanation. \textit{<Sugerencia sobre uso de comentarios>} \\
+
+\textit{<Ejemplos de FSP>} \\
+
+\textit{<Insights>} \\
+
+\textbf{New problem:} \\
+\textit{<Descripción del problema en lenguaje natural>} \\
+
+\textit{<Información y reflexión sobre intento anterior>} \\
+
+\textit{<Razonamiento previo sobre el problema>} \\
+
+\textit{<Objetos determinados a utilizar>} \\
+
+\textbf{Problem PDDL:}
+\end{tcolorbox}
+
+Cada sección entre corchetes angulares es determinada dinámicamente en función de las características del dominio, del problema específico y de los módulos activados en el agente. Esta construcción jerárquica del \textit{prompt} permitió evaluar de forma aislada y combinada el impacto de técnicas como el uso de \textit{FSP}, razonamiento estructurado, utilización de \textit{insights} extraídos previamente, la determinación anticipada de objetos relevantes para el modelado del problema, etc.
+
+A continuación, se describen los componentes que pueden ser incorporados dinámicamente:
+
+\begin{itemize}
+    \item \textit{<Nombre del dominio>}, \textit{<Descripción corta del dominio en lenguaje natural>}, y \textit{<Modelo PDDL del dominio>}: estos elementos son obtenidos de la base de recursos del dominio, la cual es proporcionada por el experto humano. Dicha base se incluye como material de referencia en el Anexo correspondiente.
+
+    \item \textit{<Requerimientos del subconjunto de PDDL>}: esta sección del \textit{prompt} especifica los requerimientos del subconjunto de \textit{PDDL} a utilizar. En los casos en que el dominio incluía objetos tipados, se indica que la generación debe ajustarse al subconjunto \textit{STRIPS + :typing}; de lo contrario, se indica únicamente \textit{STRIPS}.
+
+    \item \textit{<Sugerencia sobre uso de comentarios>}: este fragmento es incluido solo si se activa el módulo \textit{Comments}. El mensaje añadido es el siguiente: 
+
+    \begin{quote}
+    \textit{"Before each predicate in the :init and :goal sections you can use at most 1 short one-line comment to describe the start of a relevant section of definitions."}
+    \end{quote}
+
+    \item \textit{<Ejemplos de FSP>}: este bloque se incorpora únicamente cuando el módulo \textit{FSP} está activado. La composición y origen de los ejemplos depende de los módulos activos. Si el módulo \textit{RAG} no está habilitado, el ejemplo se selecciona directamente de la base de recursos del dominio proporcionada por el experto humano. En cambio, si \textit{RAG} está activo, se utiliza un componente \textit{Retriever} para seleccionar los $k$ ejemplos más similares al problema a resolver, a partir del \textit{Experience Pool} (conjunto de soluciones correctas generadas durante la fase de entrenamiento, incluyendo los ejemplos originales).
+
+    Para cada ejemplo $e_i$ ($1 \leq i \leq k$), se añade al \textit{prompt} el siguiente bloque:
+
+    \begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} base del agente modelador propuesto, fonttitle=\bfseries, breakable]
+    \textbf{Example \#i:} \\
+    \textbf{Problem:} \\
+    \textit{<Descripción del problema de ejemplo en lenguaje natural>} \\
+
+    \textit{<Razonamiento sobre el problema de ejemplo>} \\
+
+    \textit{<Objetos determinados a utilizar>} \\
+
+    \textbf{Problem PDDL:} \\
+    \textit{<Modelo PDDL del problema de ejemplo>}
+    \end{tcolorbox}
+
+    Los campos \textit{<Razonamiento sobre el problema de ejemplo>} y \textit{<Objetos determinados a utilizar>} se incluyen únicamente si los módulos \textit{Reasoning} y \textit{Objects Extraction} están activados, respectivamente. Estos mantienen el mismo formato que en el \textit{prompt} base del agente.
+
+    \item \textit{<Insights>}: este segmento se añade si se activa el módulo \textit{Insights}. Su objetivo es proporcionar conocimiento previamente extraído y estructurado a partir de la experiencia del agente durante la fase de entrenamiento. El fragmento incorporado al \textit{prompt} tiene la siguiente forma:
+
+    \begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Bloque de \textit{insights}, fonttitle=\bfseries, breakable]
+    This are some insights you have gathered through experience, to guide your response: \\
+    \textbf{- DOMAIN\_KNOWLEDGE (insights related to world knowledge of the given planning domain):} \\
+    \textit{...} \\
+    \textbf{- DOMAIN\_RULES (domain-specific modeling rules, tips, or best practices):} \\
+    \textit{...} \\
+    \textbf{- GENERAL (general modeling principles applicable across domains):} \\
+    \textit{...} \\
+
+    Make sure to FOLLOW CLOSELY this insights, specially the DOMAIN\_RULES.
+    \end{tcolorbox}
+
+    Si no existen \textit{insights} asociados a alguno de los tres tipos (\textit{DOMAIN\_KNOWLEDGE}, \textit{DOMAIN\_RULES}, o \textit{GENERAL}), dicho apartado se omite del \textit{prompt}.
+
+\end{itemize}
+
+El bloque final del \textit{prompt} está destinado al problema de planificación que se desea resolver. La construcción de esta sección también es modular y depende de los componentes activos en el agente modelador.
+
+\begin{itemize}
+    \item \textit{<Descripción del problema en lenguaje natural>}: este fragmento representa la formulación textual del problema de planificación a resolver, tal como fue proporcionada en el conjunto de datos de entrada. Siempre se incluye, y constituye el núcleo del ejemplo objetivo.
+
+    \item \textit{<Información y reflexión sobre intento anterior>}: este bloque se incorpora únicamente en los casos en que el agente pertenece al subconjunto denominado \textit{experiencial}, donde se permite la re-ejecución de múltiples intentos sobre un mismo problema. Este tipo de agentes se caracteriza por incorporar mecanismos de reflexión sobre fallos anteriores, y su prompt particular se presenta más adelante. En este caso, cuando el módulo \textit{Reflection} está activo y no se trata del primer intento sobre un problema, se incluye la siguiente estructura en el \textit{prompt}:
+
+    \begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Bloque de reflexión sobre intento anterior, fonttitle=\bfseries, breakable]
+    You have tried the problem before, unsuccessfully. This was your answer: \\
+
+    \textit{<Razonamiento sobre el problema de ejemplo>} \\
+
+    \textit{<Objetos determinados a utilizar>} \\
+
+    \textbf{Generated Problem PDDL:} \\
+    \textit{<Modelo PDDL del problema generado en el intento anterior>} \\
+
+    \textbf{Evaluation feedback:} \\
+    \textit{<Feedback sobre el fallo en la evaluación>} \\
+
+    \textbf{Reflection on the previous trial:} \\
+    \textit{<Reflexión sobre el fallo>} \\
+
+    Try again, taking into account the previous trial.\\
+
+    \textbf{New trial:}
+    \end{tcolorbox}
+
+    En este bloque, los fragmentos \textit{<Razonamiento sobre el problema de ejemplo>} y \textit{<Objetos determinados a utilizar>} son añadidos solo si se encuentran activos los módulos \textit{Reasoning} y \textit{Objects Extraction}, respectivamente, siguiendo el formato descrito previamente.
+
+    El componente \textit{<Feedback sobre el fallo en la evaluación>} es generado automáticamente a partir de las métricas de evaluación y otros resultados parciales del intento anterior. Este se expresa en lenguaje natural, y su proceso de construcción se detalla en secciones posteriores de este capítulo.
+
+    Finalmente, la sección \textit{<Reflexión sobre el fallo>} es generada por un sub-agente especializado en reflexión sobre errores en modelado, el cual se presenta también en detalle en secciones subsiguientes.
+
+    \item \textit{<Razonamiento previo sobre el problema>} y \textit{<Objetos determinados a utilizar>}: estos bloques se incluyen en el \textit{prompt} principal únicamente si están activados los módulos \textit{Reasoning} y \textit{Objects Extraction}, respectivamente.
+
+    \begin{itemize}
+        \item El componente \textit{<Razonamiento previo sobre el problema>} es generado por un sub-agente especializado en análisis y razonamiento sobre la modelación de problemas de planificación, que busca desambiguar y predecir las posibles estructuras del problema en base al conocimiento del dominio, la descripción del problema y los principios generales de modelado. Este agente se describe en detalle más adelante.
+
+        \item El componente \textit{<Objetos determinados a utilizar>} corresponde a una lista explícita de objetos relevantes que deben incluirse en el modelo \textit{PDDL} generado. Esta información es proporcionada por un sub-agente especializado en extracción de objetos, cuyo funcionamiento también se analiza en secciones posteriores.
+    \end{itemize}
+
+\end{itemize}
+
+\section*{Razonamiento}
+
+El \textit{prompt} utilizado para esta tarea se muestra a continuación:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente de razonamiento, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning Modeler AI Agent specialized in reasoning.} You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide a structured reasoning about the problem for its translation to PDDL.\\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>}\\
+
+\textbf{Domain PDDL:} \\
+\textit{<Modelo PDDL del dominio>}\\
+
+\textbf{Task:} \\
+You will be given natural language descriptions of planning problems in this domain. \\
+\textit{*Reason step by step* to resolve any ambiguities or missing details, to help to improve the semantic correctness of a posterior problem PDDL generation by another Planning Modeler Agent.}\\
+Write your reasoning as exactly 3 paragraphs of no more than 100 words each. In them you should cover, in order: \\
+
+1. \textbf{Objects}: list every object by name.\\
+2. \textbf{Initial state}: describe the initial state, and any assumptions you make to fill in missing info.\\
+3. \textbf{Goal state}: describe the goal state, and any assumptions you make to fill in missing info.\\
+
+Fully specify the subgoals and initial state as detailed as you can. Don't reason about the planning itself, just the PDDL. Don't extend beyond 3 short paragraphs.\\
+
+\textit{<Ejemplos de FSP>}\\
+
+\textit{<Insights>}\\
+
+\textbf{New problem:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textit{<Información y reflexión sobre intento anterior>}\\
+
+\textbf{Reasoning:}
+\end{tcolorbox}
+
+Al igual que en el \textit{prompt} del agente generador de \textit{PDDL}, los fragmentos representados entre signos \textit{<...>} son determinados dinámicamente en función del problema a resolver y de los módulos activos en la configuración del agente. El contenido de estos elementos se obtiene y estructura del mismo modo descrito previamente en las secciones correspondientes.
+
+\section*{Extracción de Objetos}
+
+El siguiente \textit{prompt} fue utilizado para inducir al \textit{LLM} a realizar la tarea de extracción de objetos:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente de extracción de objetos, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning Modeler AI Agent specialized in objects extraction.} You are given the description and PDDL code of a planning domain and the natural language descriptions of problems in this domain, and for each you provide a JSON of all the objects in the PDDL problem instance.\\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>}\\
+
+\textbf{Domain PDDL:} \\
+\textit{<Modelo PDDL del dominio>}\\
+
+\textbf{Task:} \\
+You will be given natural language descriptions of planning problems in this domain. \\
+Provide a JSON of all the objects in the PDDL problem instance\textit{<Indicación de tipado>}.\\
+
+\textit{<Ejemplos de FSP>}\\
+
+\textbf{New problem:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textit{<Información y reflexión sobre intento anterior>}\\
+
+\textit{<Razonamiento previo sobre el problema>}\\
+
+\textbf{Objects to use:}
+\end{tcolorbox}
+
+Al igual que en los \textit{prompts} anteriores, los elementos representados entre signos \textit{<...>} son agregados o modificados en función del problema específico y de los módulos activados en el agente. A continuación se describe el significado y la lógica de inclusión de los elementos particulares de este \textit{prompt}:
+
+\begin{itemize}
+    \item \textit{<Información y reflexión sobre intento anterior>} se incluye únicamente si el módulo \textit{Reflection} está activo y el agente ha realizado al menos un intento anterior fallido sobre el mismo problema. Sin embargo, este fragmento no se incluye si también se encuentra activo el módulo de razonamiento, ya que la reflexión se utiliza exclusivamente en los \textit{prompts} para generación o reintentos.
+
+    \item \textit{<Razonamiento previo sobre el problema>} se añade si está habilitado el módulo \textit{Reasoning}, y su contenido se genera a partir del subagente especializado en razonamiento descrito en la sección anterior.
+
+    \item \textit{<Indicación de tipado>} es una indicación opcional que se añade al final de la instrucción principal si el dominio modelado utiliza objetos tipados. En este caso, se inserta la frase \textit{``, separated by type''}, con el fin de que el modelo agrupe los objetos extraídos por tipo en la estructura \textit{JSON}. Si el dominio no está tipado, este fragmento se omite.
+\end{itemize}
+
+\section*{Reflexión}
+
+A continuación se muestra el \textit{prompt} empleado:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente de reflexión, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning Modeler AI Agent, capable of reflecting on failed attempts of planning problems within a given domain.} In each case, a modeler agent was provided with the domain description, its corresponding PDDL file, and a natural language description of the problem, then attempted to generate the Problem PDDL file.\\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>}\\
+
+\textbf{Domain PDDL:} \\
+\textit{<Modelo PDDL del dominio>}\\
+
+\textbf{Task:} \\
+You will be presented with a natural language description of a planning problem, along with a failed attempt to generate its corresponding PDDL representation. You will also receive a description of the errors in the attempted PDDL.\\
+
+The generated problem PDDL may suffer from one or more of the following issues:
+\begin{itemize}
+    \item \textbf{Incorrect Object Count:} The number of declared objects is inaccurate. If typed, the number of objects of specific types may be wrong.
+    \item \textbf{Syntactical Errors:} The PDDL is not parseable due to violations of the \textit{<Requerimientos>} subset of PDDL syntax, use of undefined objects, or other syntactical mistakes.
+    \item \textbf{Unsolvable Problem:} No plan can achieve the goal state from the given initial state due to one of the following reasons:
+    \begin{itemize}
+        \item Impossible Initial/Goal State: The initial and/or goal state contain contradictory predicates.
+        \item Path Infeasibility: Even if both initial and goal states are individually consistent, there is no sequence of actions that can transform the initial state into the goal state.
+    \end{itemize}
+    \item \textbf{Semantically Incorrect:} The PDDL representation is not faithful to the natural language description. This is caused by inaccuracies in the initial state, the goal state, or both. While deemed incorrect, elements of the initial and/or goal states may still be partially correct but lack necessary predicates for a complete specification.
+\end{itemize}
+
+Unparseable PDDL cannot be solvable or semantically correct. Similarly, unsolvable PDDL cannot be semantically correct. In these cases, no specific feedback will be provided on later issues, but you may be able to identify/prevent them.\\
+
+Provide a single paragraph reflecting on the potential causes of the failed attempt and propose corrections. Carefully consider whether modifications are necessary for the initial state, goal state, or both.\\
+
+\textbf{Problem:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textit{<Razonamiento sobre el problema realizado en el intento anterior>}\\
+
+\textit{<Objetos determinados a utilizar en el intento anterior>}\\
+
+\textbf{Generated problem PDDL:} \\
+\textit{<Modelo PDDL del problema generado en el intento anterior>}\\
+
+\textbf{Evaluation feedback:} \\
+\textit{<Feedback de evaluación sobre el fallo del intento anterior>}\\
+
+\textbf{Your reflection:}
+\end{tcolorbox}
+
+Al igual que en las descripciones anteriores de agentes, los elementos encerrados entre símbolos \texttt{<}\texttt{>} fueron construidos o incluidos en dependencia del dominio y problema particular, así como del resultado del intento anterior y la retroalimentación generada. Particularmente:
+
+\begin{itemize}
+    \item \textit{<Razonamiento sobre el problema realizado en el intento anterior>} y \textit{<Objetos determinados a utilizar en el intento anterior>} son incluidos solamente si el agente modelador responsable del intento previo realizó las fases de razonamiento y extracción de objetos, respectivamente.
+    
+    \item \textit{<Modelo PDDL del problema generado en el intento anterior>} corresponde al resultado concreto del intento previo del agente modelador, modelado en \textit{PDDL}.
+    
+    \item \textit{<Feedback de evaluación sobre el fallo del intento anterior>} es la descripción en lenguaje natural del fallo generada en la evaluación, donde se indican explícitamente las causas del fallo, ya fueran sintácticas o semánticas.
+\end{itemize}
+
+\section*{Agente de \textit{Insights}}
+
+Para permitir que el agente de \textit{insights} opere sobre conjuntos complejos y estructurados de conocimiento, se diseñó un \textit{prompt} parametrizable y flexible que guía el comportamiento del modelo de lenguaje durante la fase de generación o depuración de \textit{insights}. Este \textit{prompt} adopta una estructura instruccional clara, definiendo el contexto del dominio, las reglas operacionales, las limitaciones por tipo de \textit{insight}, y la información sobre los intentos previos que deben ser tenidos en cuenta:
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=\textit{Prompt} del agente de \textit{insights}, fonttitle=\bfseries, breakable]
+\textbf{You are an advanced Planning Modeler AI Agent that can revise a structured set of insights by adding, editing, removing, or agreeing with existing insights.} Your operations will be based on \textit{<Información sobre el modo de extracción>}.\\
+
+\textbf{Domain:} \textit{<Nombre del dominio>} \\
+\textit{<Descripción corta del dominio en lenguaje natural>}\\
+
+\textbf{Domain PDDL:} \\
+\textit{<Modelo PDDL del dominio>}\\
+
+\textit{<Insights existentes>} \\
+
+Your task is to update these insight lists based on \textit{<Elementos a considerar>}. Each operation must be applied to the list corresponding to the selected insight type.\\
+
+\textbf{The available operations are:} \\
+\begin{itemize}
+    \item \textbf{AGREE:} affirm an existing insight that is still relevant and valuable.
+    \item \textbf{REMOVE:} discard an insight that is incorrect, redundant, too narrow, or superseded.
+    \item \textbf{EDIT:} rewrite an existing insight to improve generality, clarity, or usefulness.
+    \item \textbf{ADD:} introduce a new insight that is not already represented in the list.
+\end{itemize}
+
+You can apply up to \textit{<Límite de operaciones por tipo de insight>} operations per insight type. Each insight can only receive one operation, and any insight not explicitly marked with AGREE, REMOVE, or EDIT will remain unchanged. All generated insights must be general, reusable, and concise, focusing on helping the agent produce PDDL that respects the domain constraints and problem description.\\
+
+\textit{<Información de los intentos>}\\
+
+\textit{<Instrucción si hay demasiados insights>}\\
+
+\textbf{Below are the operations you do to the above list of EXISTING INSIGHTS:}
+\end{tcolorbox}
+
+De forma análoga a otros agentes del sistema, los elementos entre símbolos \texttt{<...>} son completados dinámicamente en función del dominio, el problema en cuestión, los intentos previos realizados, y los \textit{insights} existentes en la base actual. A continuación se describe detalladamente el significado de cada uno de los componentes del \textit{prompt}:
+
+\begin{itemize}
+    \item \textit{<Nombre del dominio>}, \textit{<Descripción corta del dominio en lenguaje natural>} y \textit{<Modelo PDDL del dominio>}: extraídos directamente de la base de datos de dominios, representan el contexto principal sobre el cual se realizan las recomendaciones.
+    
+    \item \textit{<Límite de operaciones por tipo de insight>}: representa la cantidad máxima de operaciones que el agente puede aplicar a cada tipo de \textit{insight} en una sesión. En este trabajo, se fijó este parámetro en 4.
+
+    \item \textit{<Insights existentes>}: sección que contiene la descripción de los tres tipos de \textit{insights} definidos (conocimiento del dominio, reglas específicas del dominio, y reglas generales), junto con las listas actuales en cada categoría, numeradas para referencia.
+
+    \item \textit{<Información sobre el modo de extracción>}: depende del procedimiento utilizado para generar el conjunto de entrada. Se describe a detalle próximamente.
+
+    \item \textit{<Elementos a considerar>}: especifica el contenido relevante a considerar por el modelo en la generación o depuración de \textit{insights}.
+
+    \item \textit{<Información de los intentos>}: provee los detalles sobre los intentos del agente modelador correspondientes al conjunto de entrada, ya sea trayectorias exitosas, trayectorias fallidas, reflexiones generadas, o retroalimentaciones de evaluación.
+
+    \item \textit{<Instrucción si hay demasiados insights>}: bloque opcional, que se añade cuando la cantidad de \textit{insights} de un tipo sobrepasa un umbral definido ($M = 10$), e instruye al agente a priorizar la eliminación o depuración en lugar de seguir agregando nuevos elementos.
+\end{itemize}
+
+Este \textit{prompt} se utilizó de forma iterativa en la fase de generación de \textit{insights}, permitiendo al agente refinar de manera controlada su base de conocimiento a partir del análisis crítico de los datos acumulados.
+
+\subsubsection{Comparación de un par de intentos de un mismo problema, uno fallido y uno exitoso}
+
+Para este modo de extracción, el \textit{prompt} proporcionado al agente de \textit{insights} incluye información detallada sobre ambos intentos —el fallido y el exitoso— del mismo problema. A continuación se presenta la forma en que se instancian los fragmentos variables del \textit{prompt}:
+
+\begin{itemize}
+    \item \textit{<Información sobre el modo de extracción>}: se describe el tipo de comparación a realizar, incluyendo la fuente de información y el contexto de los intentos:
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Modo de extracción de \textit{insights}, fonttitle=\bfseries, breakable]
+two attempts (one successful and one unsuccessful) of the same task. In each attempt, the modeler agent received the domain description, the Domain PDDL file, and a natural language description of the problem, and produced a Problem PDDL file as output
+\end{tcolorbox}
+
+    \item \textit{<Elementos a considerar>}: se indica al agente qué patrones o señales debe analizar para proponer nuevas modificaciones al conjunto de \textit{insights}:
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Elementos a considerar, fonttitle=\bfseries, breakable]
+patterns, lessons or recurring mistakes observed by contrasting the failed trial to the successful trial
+\end{tcolorbox}
+
+    \item \textit{<Información de los intentos>}: se provee una representación detallada de ambos intentos, así como la reflexión realizada tras el intento fallido (si aplica):
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Información de los intentos, fonttitle=\bfseries, breakable]
+\textbf{Problem:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textbf{Failed attempt:} \\
+
+\textit{<Razonamiento realizado sobre el problema>}\\
+
+\textit{<Objetos determinados a utilizar>}\\
+
+\textit{<Modelo PDDL generado del problema>}\\
+
+\textit{<Feedback de evaluación sobre el fallo>}\\
+
+\textbf{Reflection:} \\
+\textit{<Reflexión sobre el intento fallido>}\\
+
+\textbf{Successful attempt:} \\
+
+\textit{<Razonamiento realizado sobre el problema>}\\
+
+\textit{<Objetos determinados a utilizar>}\\
+
+\textit{<Modelo PDDL generado del problema>}\\
+\end{tcolorbox}
+\end{itemize}
+
+\subsubsection{Comparación de varias soluciones correctas de distintos problemas del mismo dominio}
+
+En este caso, el agente de \textit{insights} recibe un lote de problemas correctamente resueltos por el agente modelador dentro del mismo dominio, y debe derivar \textit{insights} observando regularidades útiles en la representación del problema. A continuación se presenta la forma en que se instancian los fragmentos variables del \textit{prompt}:
+
+\begin{itemize}
+    \item \textit{<Información sobre el modo de extracción>}: se describe que todos los intentos presentados fueron exitosos, y se mantiene el contexto común de dominio:
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Modo de extracción de \textit{insights}, fonttitle=\bfseries, breakable]
+successful task attempts. In each task, the same planning domain was used, and the modeler agent received the domain description, the Domain PDDL file, and a natural language description of the problem, and produced a Problem PDDL file as output
+\end{tcolorbox}
+
+    \item \textit{<Elementos a considerar>}: el objetivo se centra en la identificación de patrones positivos:
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Elementos a considerar, fonttitle=\bfseries, breakable]
+patterns or lessons observed from the successful trials
+\end{tcolorbox}
+
+    \item \textit{<Información de los intentos>}: se construye una entrada por cada problema exitoso, separadas con una línea divisoria. Por cada intento $i$, se provee:
+\begin{tcolorbox}[colback=gray!10!white, colframe=black, title=Información de los intentos exitosos, fonttitle=\bfseries, breakable]
+\textbf{Problem \#i:} \\
+\textit{<Descripción del problema en lenguaje natural>}\\
+
+\textit{<Razonamiento realizado sobre el problema>}\\
+
+\textit{<Objetos determinados a utilizar>}\\
+
+\textit{<Modelo PDDL generado del problema>}\\
+\end{tcolorbox}
+\end{itemize}
+
+\section*{Estructura del proyecto implementado}
+
+Esta es la estructura que siguió la implementación, tal cual se presenta en el repositorio de \textit{GitHub} (\href{https://github.com/arielgg46/Thesis}{github.com/arielgg46/Thesis}):
+
+\texttt{src} (carpeta raíz o \textit{source})
+
+\texttt{|---- agents} (implementación de agentes modeladores y planificadores)
+
+\texttt{|   |---- modeler\_agents.py} (agentes modeladores con mejoras propuestas)
+
+\texttt{|   |---- orig\_llm\_plus\_p\_agents.py} (agentes modeladores \textit{baselines} originales del trabajo LLM+P)
+
+\texttt{|   |---- planner\_agents.py} (planificadores clásicos usados como \textit{baselines})
+
+\texttt{|   |---- reflection\_agent.py} (agente reflexionador)
+
+\texttt{|---- classical\_planner} (\textit{wrapper} para uso de planificadores externos)
+
+\texttt{|   |---- planner.py} (interfaz con \textit{Fast Downward} y procesamiento de planes)
+
+\texttt{|---- client} (interfaz con APIs de LLMs)
+
+\texttt{|   |---- queries} (registro de consultas a los modelos LLM en formato JSON)
+
+\texttt{|   |---- token\_consumption.json} (registro del consumo de tokens por consulta)
+
+\texttt{|   |---- client.py} (código para realizar consultas a \textit{LLMs} mediante la \textit{API} de \textit{Fireworks AI})
+
+\texttt{|---- dataset} (carga, manejo y documentación del \textit{dataset})
+
+\texttt{|   |---- subsets} (subconjuntos estratificados del \textit{benchmark Planetarium})
+
+\texttt{|   |---- dataset-v4.db} (base de datos \textit{SQLite} del \textit{dataset})
+
+\texttt{|   |---- dataset.py} (funciones para acceder y modificar el \textit{dataset} y sus subconjuntos)
+
+\texttt{|   |---- report.md} (documentación técnica del \textit{dataset})
+
+\texttt{|---- domains} (recursos de los dominios)
+
+\texttt{|   |---- blocksworld} (recursos de \textit{Blocksworld})
+
+\texttt{|   |   |---- actions\_description.txt} (descripciones textuales de las acciones)
+
+\texttt{|   |   |---- domain.pddl} (modelo \textit{PDDL} del dominio)
+
+\texttt{|   |   |---- domain\_description.txt} (descripción textual breve del dominio)
+
+\texttt{|   |   |---- fsp\_ex\_nl.txt} (descripción en lenguaje natural del problema de ejemplo \textit{FSP})
+
+\texttt{|   |   |---- fsp\_ex\_objects.json} (objetos extraídos del ejemplo \textit{FSP})
+
+\texttt{|   |   |---- fsp\_ex\_pddl.pddl} (modelo \textit{PDDL} del problema del ejemplo \textit{FSP})
+
+\texttt{|   |   |---- fsp\_ex\_plan.pddl} (plan generado para el ejemplo \textit{FSP})
+
+\texttt{|   |   |---- fsp\_ex\_reasoning.txt} (razonamiento estructurado asociado al ejemplo \textit{FSP})
+
+\texttt{|   |   |---- planner\_output\_syntax.txt} (estructura de salida esperada del planificador)
+
+\texttt{|   |---- floor-tile} (archivos análogos para el dominio Floor-Tile)
+
+\texttt{|   |---- gripper} (archivos análogos para el dominio Gripper)
+
+\texttt{|   |---- utils.py} (utilidades para manejo de los recursos de dominio)
+
+\texttt{|---- exp} (componentes del módulo de aprendizaje experiencial)
+
+\texttt{|   |---- exps} (\textit{pool} de experiencias acumuladas durante entrenamiento)
+
+\texttt{|   |---- operations} (registro de operaciones de la extracción de \textit{insights})
+
+\texttt{|   |---- experience\_pool.py} (gestión del \textit{pool} de experiencias acumuladas)
+
+\texttt{|   |---- insights.json} (archivo con \textit{insights} extraídos)
+
+\texttt{|   |---- insights\_extraction.py} (lógica de extracción de \textit{insights})
+
+\texttt{|   |---- insights\_extraction\_progress.json} (progreso de extracción de \textit{insights})
+
+\texttt{|   |---- training.py} (entrenamiento del agente experiencial)
+
+\texttt{|   |---- training\_progress.json} (progreso del entrenamiento experiencial)
+
+\texttt{|---- grammar} (construcción de gramáticas para \textit{GCD})
+
+\texttt{|   |---- grammar.py} (métodos para construcción de gramáticas)
+
+\texttt{|   |---- kovacs-pddl-3.1-2011.pdf} (especificación oficial \textit{BNF} de \textit{PDDL} 3.1)
+
+\texttt{|   |---- pddl\_bnf.py} (definición de la gramática \textit{PDDL} como \textit{BNF} programática)
+
+\texttt{|---- rag} (módulo de \textit{Retrieval-Augmented Generation (RAG)})
+
+\texttt{|   |---- api\_embedder.py} (generación de embeddings usando \textit{API} de \textit{HuggingFace})
+
+\texttt{|   |---- embeddings\_with\_ids\_test5.npz} (\textit{embeddings} precalculados del subconjunto de prueba)
+
+\texttt{|   |---- embeddings\_with\_ids\_train5.npz} (\textit{embeddings} precalculados del subconjunto de entrenamiento)
+
+\texttt{|   |---- local\_embedder.py} (generación local de \textit{embeddings} con \texttt{sentence-transformers})
+
+\texttt{|   |---- retriever.py} (clase \textit{Retriever} para recuperación de experiencias similares via \textit{RAG})
+
+\texttt{|---- results} (registro de los resultados de la evaluación)
+
+\texttt{|---- utils} (utilidades varias para todo el sistema)
+
+\texttt{|   |---- evaluation\_utils.py} (métodos para evaluación de los modelos generados)
+
+\texttt{|   |---- io\_utils.py} (utilidades de entrada/salida)
+
+\texttt{|   |---- pddl\_utils.py} (utilidades para manipulación de archivos \textit{PDDL})
+
+\texttt{|   |---- planning\_utils.py} (funciones auxiliares para uso de planificadores clásicos)
+
+\texttt{|   |---- result\_utils.py} (formateo y procesamiento de resultados experimentales)
+
+\texttt{|   |---- tokens\_utils.py} (análisis y manejo del consumo de tokens)
+
+\texttt{|---- validator} (módulo para validación planes)
+
+\texttt{|   |---- validator.py} (integración con \textit{VAL})
+
+\texttt{|---- visualizer} (visualización de los resultados)
+
+\texttt{|   |---- visualizer.py} (generación de diagramas de las métricas evaluadas)
+
+\texttt{|---- check\_planetarium\_generation.py} (verificación de generación del \textit{dataset Planetarium})
+
+\texttt{|---- config.py} (configuración global de hiperparámetros y rutas)
+
+\texttt{|---- evaluations\_progress.json} (registro del progreso en evaluaciones básicas)
+
+\texttt{|---- exp\_evaluation\_progress.json} (registro del progreso en evaluaciones del agente experiencial)
+
+\texttt{|---- main.py} (punto de entrada principal del sistema)
+
+\section*{Correcciones del \textit{dataset} de \textit{Planetarium}}
+
+\subsection*{Blocksworld}
+
+\begin{itemize}
+    \item \textbf{\texttt{equal\_towers}}: la descripción indicaba incorrectamente la cantidad de torres generadas. Este error se encontraba en la función \texttt{abstract\_description} de la clase \texttt{BlocksworldDatasetGenerator}, y se debía a una utilización incorrecta de la función \texttt{len()} para contar las torres.
+
+\begin{lstlisting}[language=Python, caption={Corrección de \texttt{equal\_towers} dentro de \texttt{BlocksworldDatasetGenerator.abstract\_description}}, label={lst:equal_towers_fix}, basicstyle=\ttfamily\small, frame=single]
+# ISSUE: Incorrect tower count due to using len(blocks_list) instead of len(num_blocks).
+# FIX: Replaced all occurrences of len(blocks_list) with len(num_blocks).
+
+case ("equal_towers", True):
+    num_blocks = self._equal_towers(blocks_list)
+    return f"You have {sum(num_blocks)} blocks, b1 through b{sum(num_blocks)}, stacked into {len(num_blocks)} towers of equal heights, and your arm is empty."
+
+case ("equal_towers", False):
+    num_blocks = self._equal_towers(blocks_list)
+    return f"Your goal is to stack the blocks into {len(num_blocks)} towers of equal heights."
+\end{lstlisting}
+
+    \item \textbf{\texttt{invert}}: la descripción original contenía una redacción confusa y poco natural en inglés, dificultando la comprensión de la meta propuesta. Este error también se localizó en la función \texttt{abstract\_description} de la clase \texttt{BlocksworldDatasetGenerator}.
+
+\begin{lstlisting}[language=Python, caption={Mejora de redacción en \texttt{invert} dentro de \texttt{BlocksworldDatasetGenerator.abstract\_description}}, label={lst:invert_fix}, basicstyle=\ttfamily\small, frame=single]
+# MINOR ISSUE: Awkward phrasing in goal description made it hard to understand.
+# FIX: Rephrased for clarity and naturalness.
+
+case ("invert", True):
+    return f"You have {num_blocks} blocks, stacked into {len(blocks_list)} towers of heights {', '.join(str(h) for h in blocks_list)}, and your arm is empty."
+
+case ("invert", False):
+    return f"Your goal is to invert each individual stack of blocks, such that in each tower the block that was originally on the bottom will be on the top."
+\end{lstlisting}
+\end{itemize}
+
+\subsection*{Gripper}
+
+\begin{itemize}
+    \item \textbf{\texttt{drop\_and\_pickup}}: se detectaron dos problemas principales. Primero, el generador no aseguraba que existiera una sala vacía distinta de la sala inicial, lo cual era un requisito lógico del escenario. Segundo, la descripción de la meta era ambigua y difícil de interpretar.
+
+\begin{lstlisting}[language=Python, caption={Corrección lógica en \texttt{GripperDatasetGenerator.drop\_and\_pickup}}, label={lst:gripper_drop_logic}, basicstyle=\ttfamily\small, frame=single]
+# POTENTIAL ISSUE: It requires at least one empty room other than the starting one.
+# FIX: Added exception handling for this case.
+
+if not any([b == 0 for b in balls_in_rooms[1:]]):
+    raise ValueError("No empty room other than the starting one")
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Mejora de redacción en \texttt{GripperDatasetGenerator.abstract\_description} para \texttt{drop\_and\_pickup}}, label={lst:gripper_drop_text}, basicstyle=\ttfamily\small, frame=single]
+# POTENTIAL ISSUE: Unclear phrasing regarding balls not held by robby.
+# FIX: Clarified phrasing and ensured exception handling exists for layout constraints.
+
+case ("drop_and_pickup", False):
+    return "Your goal is to drop all the balls held by grippers in an empty room that the robby didn't start in, and pick up the balls that were not initially held by the robby."
+\end{lstlisting}
+
+    \item \textbf{\texttt{holding}}: el generador no garantizaba que al menos un \textit{gripper} sostuviera una pelota. Además, no se aseguraba que las pelotas estuvieran únicamente en la primera sala, como se requería. Estas verificaciones fueron agregadas a la función \texttt{holding}.
+
+\begin{lstlisting}[language=Python, caption={Control de errores en \texttt{GripperDatasetGenerator.holding}}, label={lst:gripper_holding_logic}, basicstyle=\ttfamily\small, frame=single]
+# ISSUE: Not ensured that at least one gripper is holding a ball.
+# FIX: Added validation to ensure a ball is being held.
+
+if sum(balls_in_grippers) == 0:
+    raise ValueError("Holding requires at least one gripper holding a ball")
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Corrección en descripción abstracta para \texttt{holding}}, label={lst:gripper_holding_text}, basicstyle=\ttfamily\small, frame=single]
+# FIX: Ensured all balls not in grippers are in room 1 (init layout constraint assumed).
+
+case ("holding", True):
+    return f"{objects}. {max(sum(balls_in_grippers), 1)} balls are distributed across the same number of grippers, and the rest are in the first room. The robby is in the first room."
+
+case ("holding", False):
+    return f"Your goal is to make sure robby is holding {max(sum(balls_in_grippers), 1)} balls."
+\end{lstlisting}
+
+    \item \textbf{\texttt{juggle}}: las descripciones abstractas no especificaban con claridad la dirección del desplazamiento de las pelotas, ni cómo se asignaban originalmente a los \textit{grippers}. También era posible que se generaran configuraciones inválidas si no había suficientes \textit{grippers} con pelotas. Se realizaron las aclaraciones necesarias en la función \texttt{abstract\_description}.
+
+\begin{lstlisting}[language=Python, caption={Mejoras de claridad y validez en \texttt{GripperDatasetGenerator.abstract\_description} para \texttt{juggle}}, label={lst:gripper_juggle_text}, basicstyle=\ttfamily\small, frame=single]
+# ISSUE: Ambiguity in description of juggling operation and initial state mapping.
+# FIX: Specified shift direction and explicit ball-gripper mapping in description.
+
+case ("juggle", True):
+    return f"{objects}. {sum(balls_in_grippers)} balls are distributed across the same number of grippers (ball1 in gripper1, ball2 in gripper2... ball{sum(balls_in_grippers)} in gripper{sum(balls_in_grippers)}), and the rest are in the first room. The robby is in the first room."
+
+case ("juggle", False):
+    return 'Your goal is to "juggle" the balls between the grippers that started with balls, such that the balls are in the same grippers as before, but shifted by one, to the left. The remaining balls should remain untouched.'
+\end{lstlisting}
+\end{itemize}
+
+\subsection*{Floor-Tile}
+
+\begin{itemize}
+    \item \textbf{\texttt{checkerboard}}: el generador de predicados construía incorrectamente la matriz que representa el tablero, produciendo desalineaciones en la disposición de los colores. Además, los bucles anidados que asignaban los colores a las casillas no utilizaban correctamente los índices del tablero.
+
+\begin{lstlisting}[language=Python, caption={Corrección en generación de predicados para \texttt{checkerboard} en \texttt{FloorTileDatasetGenerator}}, label={lst:checkerboard_fix}, basicstyle=\ttfamily\small, frame=single]
+# POTENTIAL ISSUE: Incorrect tile matrix construction
+# FIX: Corrected the loop ranges to match grid dimensions.
+
+grid = [
+    [next(tiles_iter) for _ in range(grid_size_y)] for _ in range(grid_size_x)
+]
+
+predicates = []
+
+# POTENTIAL ISSUE: Index loop variables were incorrect
+# FIX: Adjusted to proper grid indexing.
+
+for i in range(grid_size_x):
+    for j in range(grid_size_y):
+        if (i + j) % 2 == 0:
+            color = colors[0]
+        else:
+            color = colors[1]
+        predicates.append(Predicate("painted", grid[i][j], color))
+
+return predicates
+\end{lstlisting}
+
+    \item \textbf{\texttt{rings}}: la descripción de la posición inicial del robot en términos de "anillos" concéntricos era incorrecta, particularmente en las condiciones que determinaban su localización dentro del tablero. Se identificaron errores de lógica y redacción en la función \texttt{abstract\_description.get\_robot\_ring\_string}:
+
+\begin{lstlisting}[language=Python, caption={Corrección de condiciones y redacción en \texttt{get\_robot\_ring\_string}}, label={lst:robot_ring_fix}, basicstyle=\ttfamily\small, frame=single]
+# ISSUE: Incorrect corner logic and ordinal computation
+# FIX: Adjusted corner conditions and ring numbering.
+
+if pos_x == pos_y and pos_x < (grid_size_x + 1) // 2:
+    pos_str = f"the top-left corner of the {int_to_ordinal(pos_x + 1)} ring from the outside"
+
+elif pos_x == pos_y and pos_x >= (grid_size_x + 1) // 2:
+    pos_str = f"the bottom-right corner of the {int_to_ordinal(grid_size_x - pos_x)} ring from the outside"
+
+elif pos_x == grid_size_x - pos_y - 1 and pos_x < (grid_size_x + 1) // 2:
+    pos_str = f"the top-right corner of the {int_to_ordinal(pos_x + 1)} ring from the outside"
+
+elif pos_y == grid_size_y - pos_x - 1 and pos_x >= (grid_size_x + 1) // 2:
+    pos_str = f"the bottom-left corner of the {int_to_ordinal(pos_y + 1)} ring from the outside"
+\end{lstlisting}
+
+    \item \textbf{\texttt{paint\_x}}: la descripción abstracta generada para la tarea de pintar una forma en \textit{X} era poco clara. Dependiendo del número de colores requeridos, se mejoraron las formulaciones para especificar con precisión los objetivos visuales de la tarea.
+
+\begin{lstlisting}[language=Python, caption={Mejora de redacción en \texttt{abstract\_description} para \texttt{paint\_x}}, label={lst:paintx_fix}, basicstyle=\ttfamily\small, frame=single]
+# POTENTIAL ISSUE: Vague or awkward phrasing of goal description
+# FIX: Clarified intent and use of one or two colors for painting an "X".
+
+case ("paint_x", False):
+    if n_colors == 1:
+        return "Your goal is to paint, with a single color, an 'X' shape across the grid."
+    elif n_colors == 2:
+        return "Your goal is to paint, with a single color, an 'X' shape across the grid, and every other tile should be painted with a different color."
+\end{lstlisting}
+
+\end{itemize}
+
+\end{anexes}
